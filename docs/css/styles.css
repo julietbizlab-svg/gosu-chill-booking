@@ -1,0 +1,351 @@
+/* 高手揪派 — 學員預約介面（長輩友善 · 極簡 Zen） */
+
+:root {
+  color-scheme: light;
+  --bg: #f3efe6;
+  --card: #ffffff;
+  --text: #1a2420;
+  --muted: #5f6b66;
+  --accent: #2d6a4f;
+  --accent-soft: #d8eadf;
+  --line: #ddd8cc;
+  --warn: #9a6b00;
+  --danger: #a33b3b;
+  --shadow: 0 16px 40px rgba(26, 36, 32, 0.08);
+  --radius: 16px;
+  --font-base: 22px;
+  --font-small: 18px;
+  --font-large: 28px;
+  --font-title: clamp(32px, 8vw, 42px);
+  --btn-height: 64px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-base);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px 16px 40px;
+  background:
+    radial-gradient(circle at top, rgba(45, 106, 79, 0.08), transparent 45%),
+    var(--bg);
+  color: var(--text);
+  font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  width: min(100%, 720px);
+  margin: 0 auto;
+}
+
+/* ── 頂部品牌 ── */
+.brand {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.brand-mark {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: var(--font-title);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.brand p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+/* ── 卡片 ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px 20px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  margin: 0 0 16px;
+  font-size: var(--font-large);
+  font-weight: 800;
+}
+
+/* ── 狀態列 ── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 56px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--font-small);
+  font-weight: 700;
+}
+
+.status-bar.is-loading {
+  background: #eef2ef;
+  color: var(--muted);
+}
+
+.status-bar.is-error {
+  background: #fdeeee;
+  color: var(--danger);
+}
+
+.status-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.status-bar.is-loading .status-dot {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* ── 學員資訊 ── */
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.member-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent-soft);
+  background: var(--accent-soft);
+  flex-shrink: 0;
+}
+
+.member-avatar.placeholder {
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  color: var(--accent);
+}
+
+.member-name {
+  margin: 0;
+  font-size: var(--font-large);
+  font-weight: 800;
+}
+
+.member-meta {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.member-credits {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #faf8f4;
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.credits-number {
+  display: block;
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.credits-label {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+/* ── 月份切換 ── */
+.month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.month-label {
+  font-size: var(--font-large);
+  font-weight: 800;
+  text-align: center;
+  flex: 1;
+}
+
+.icon-btn {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.icon-btn:active {
+  background: var(--accent-soft);
+}
+
+/* ── 課程列表 ── */
+.course-list {
+  display: grid;
+  gap: 14px;
+}
+
+.course-item {
+  padding: 18px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: #faf8f4;
+}
+
+.course-item.is-booked {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.course-title {
+  margin: 0 0 8px;
+  font-size: var(--font-large);
+  font-weight: 800;
+}
+
+.course-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.course-seats {
+  margin-top: 10px;
+  font-size: var(--font-small);
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.course-actions {
+  margin-top: 16px;
+}
+
+/* ── 按鈕 ── */
+.btn {
+  display: block;
+  width: 100%;
+  min-height: var(--btn-height);
+  padding: 14px 20px;
+  border: none;
+  border-radius: 14px;
+  font: inherit;
+  font-size: var(--font-large);
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:active {
+  filter: brightness(0.92);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}
+
+.btn-danger {
+  background: #fff;
+  color: var(--danger);
+  border: 2px solid var(--danger);
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
+.hint-box {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #fff8e8;
+  border: 1px solid #f0dfa8;
+  color: var(--warn);
+  font-size: var(--font-small);
+  line-height: 1.7;
+}
+
+.footer-note {
+  margin-top: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  :root {
+    --font-base: 20px;
+    --btn-height: 60px;
+  }
+
+  .member-row {
+    flex-direction: column;
+    text-align: center;
+  }
+}
