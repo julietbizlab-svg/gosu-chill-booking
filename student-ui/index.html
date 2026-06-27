@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2d6a4f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="高手揪派預約">
+  <title>高手揪派 · 課程預約</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="page">
+
+    <!-- 品牌區 -->
+    <header class="brand">
+      <div class="brand-mark" aria-hidden="true">揪</div>
+      <h1>高手揪派</h1>
+      <p>課程預約 · 簡單好操作</p>
+    </header>
+
+    <!-- 登入狀態 -->
+    <div id="status-bar" class="status-bar is-loading" role="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="status-text">正在啟動…</span>
+    </div>
+
+    <!-- 學員資訊（LIFF 登入後顯示） -->
+    <section id="member-section" class="card" hidden aria-label="我的堂數">
+      <h2 class="card-title">我的堂數</h2>
+
+      <div class="member-row">
+        <img id="member-avatar" class="member-avatar" src="" alt="" width="72" height="72" hidden>
+        <div>
+          <p id="member-name" class="member-name">學員您好</p>
+          <p id="member-meta" class="member-meta">已自動登入</p>
+        </div>
+      </div>
+
+      <div class="member-credits">
+        <span id="credits-number" class="credits-number">—</span>
+        <span class="credits-label">剩餘堂數</span>
+        <span id="credits-expiry" class="credits-label">到期日：—</span>
+      </div>
+    </section>
+
+    <!-- 課表與預約 -->
+    <section id="schedule-section" class="card" hidden aria-label="月份課表">
+      <div class="month-header">
+        <button id="prev-month" class="icon-btn" type="button" aria-label="上個月">‹</button>
+        <div id="month-label" class="month-label">—</div>
+        <button id="next-month" class="icon-btn" type="button" aria-label="下個月">›</button>
+      </div>
+
+      <div id="course-list" class="course-list">
+        <div class="empty-msg">讀取中…</div>
+      </div>
+    </section>
+
+    <!-- 開發提示（API 尚未設定時顯示） -->
+    <div id="dev-hint" class="hint-box" hidden>
+      目前顯示的是示範課表。第二階段接上 Cloudflare Workers + Notion 後，會自動換成真實資料。
+    </div>
+
+    <p class="footer-note">請從 LINE 官方帳號選單進入 · 無需記密碼</p>
+  </div>
+
+  <!-- 設定 → LIFF 登入 → API → 主程式（順序不可改） -->
+  <script src="js/config.js"></script>
+  <script src="js/liff-init.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+# 複製此檔為 .dev.vars 並填入真實值（.dev.vars 不會上傳 GitHub）
+
+# Notion 整合（第二階段）
+NOTION_TOKEN=secret_xxxxxxxx
+NOTION_DATABASE_MEMBERS=xxxxxxxx
+NOTION_DATABASE_COURSES=xxxxxxxx
+NOTION_DATABASE_BOOKINGS=xxxxxxxx
+
+# LINE Channel Secret（驗證 LIFF token 用，第三階段）
+LINE_CHANNEL_ID=xxxxxxxx
