@@ -127,7 +127,12 @@
     }
 
     memberName.textContent = member.displayName + " 您好";
-    memberMeta.textContent = "已自動登入 · 無需輸入密碼";
+
+    if (member.isNew || member.status === "pending") {
+      memberMeta.textContent = "帳號待開通 · 請聯絡工作室";
+    } else {
+      memberMeta.textContent = "已自動登入 · 無需輸入密碼";
+    }
     creditsNumber.textContent = String(member.credits);
     creditsExpiry.textContent = "到期日：" + member.expiresAt;
   }
@@ -141,7 +146,7 @@
 
     courseList.innerHTML = courses.map(function (course) {
       var remaining = Number(course.capacity || 0) - Number(course.enrolled || 0);
-      var isBooked = bookedCourseIds.has(course.id);
+      var isBooked = Boolean(course.isBooked) || bookedCourseIds.has(course.id);
       var isFull = remaining <= 0 && !isBooked;
 
       var actionHtml;
@@ -196,10 +201,17 @@
     var courses;
 
     if (window.gosuApi && window.gosuApi.isConfigured()) {
-      courses = await window.gosuApi.getCourses(year, month);
+      courses = await window.gosuApi.getCourses(year, month, window.gosuUser && window.gosuUser.userId);
     } else {
       courses = getDemoCourses(year, month);
     }
+
+    bookedCourseIds.clear();
+    courses.forEach(function (course) {
+      if (course.isBooked) {
+        bookedCourseIds.add(course.id);
+      }
+    });
 
     renderCourses(courses);
   }
@@ -219,6 +231,7 @@
     try {
       if (window.gosuApi && window.gosuApi.isConfigured()) {
         await window.gosuApi.bookCourse(window.gosuUser.userId, courseId);
+        await loadMember(window.gosuUser);
       }
 
       bookedCourseIds.add(courseId);
@@ -244,6 +257,7 @@
     try {
       if (window.gosuApi && window.gosuApi.isConfigured()) {
         await window.gosuApi.cancelBooking(window.gosuUser.userId, courseId);
+        await loadMember(window.gosuUser);
       }
 
       bookedCourseIds.delete(courseId);
@@ -300,6 +314,8 @@
 
       if (!window.gosuApi || !window.gosuApi.isConfigured()) {
         devHint.hidden = false;
+      } else {
+        devHint.hidden = true;
       }
 
       await loadMember(user);

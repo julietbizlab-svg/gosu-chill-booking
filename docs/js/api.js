@@ -50,8 +50,12 @@
       return apiFetch("/api/member?userId=" + encodeURIComponent(userId));
     },
 
-    getCourses: function (year, month) {
-      return apiFetch("/api/courses?year=" + year + "&month=" + month);
+    getCourses: function (year, month, userId) {
+      var query = "/api/courses?year=" + year + "&month=" + month;
+      if (userId) {
+        query += "&userId=" + encodeURIComponent(userId);
+      }
+      return apiFetch(query);
     },
 
     bookCourse: function (userId, courseId) {

@@ -8,5 +8,5 @@ window.GOSU_CONFIG = {
 
   // 第二階段會用到：Cloudflare Workers API 網址
   // 例：https://gosu-api.你的帳號.workers.dev
-  API_BASE_URL: "https://請填入你的_Worker_網址.workers.dev"
+  API_BASE_URL: "https://gosu-chill-api.gosu-chill-book.workers.dev"
 };

@@ -1,10 +1,18 @@
 # 複製此檔為 .dev.vars 並填入真實值（.dev.vars 不會上傳 GitHub）
+#
+# ── Notion 取得方式 ──
+# 1. https://www.notion.so/my-integrations → 新增 Integration → 複製 Internal Integration Secret
+# 2. 在 Notion 建立三個資料庫（欄位名稱必須完全一致，見 backend/src/notion.js 頂部註解）
+# 3. 每個資料庫右上角 ··· → Connections → 連接您的 Integration
+# 4. 資料庫網址最後 32 字元即 Database ID（去掉連字號）
 
-# Notion 整合（第二階段）
 NOTION_TOKEN=secret_xxxxxxxx
-NOTION_DATABASE_MEMBERS=xxxxxxxx
-NOTION_DATABASE_COURSES=xxxxxxxx
-NOTION_DATABASE_BOOKINGS=xxxxxxxx
 
-# LINE Channel Secret（驗證 LIFF token 用，第三階段）
-LINE_CHANNEL_ID=xxxxxxxx
+# 學員資料庫 ID（32 字元，可含連字號）
+NOTION_DATABASE_MEMBERS=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# 課程資料庫 ID
+NOTION_DATABASE_COURSES=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# 預約紀錄資料庫 ID
+NOTION_DATABASE_BOOKINGS=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
