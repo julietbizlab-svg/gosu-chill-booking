@@ -183,7 +183,12 @@ body {
 
 /* ── 我的堂數 ── */
 .lesson-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 24px 20px;
+  margin-bottom: 20px;
 }
 
 .section-title {
@@ -796,16 +801,44 @@ body {
   }
 
   .lesson-grid {
-    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .lesson-panel {
+    padding: 12px 8px;
+    min-height: 140px;
+  }
+
+  .panel-label {
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+
+  .ticket-row {
+    font-size: 15px;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .ticket-row strong {
+    font-size: 24px;
   }
 
   .big-number {
-    font-size: 46px;
+    font-size: 40px;
+  }
+
+  .expire {
+    font-size: 14px;
   }
 
   .user-box {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .user-box .hello {
+    font-size: 22px;
   }
 
   .cal-course,
