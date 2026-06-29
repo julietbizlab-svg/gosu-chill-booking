@@ -50,6 +50,7 @@
     }
 
     statusBar.hidden = false;
+    statusBar.classList.remove("is-hidden");
     statusBar.className = "status-bar";
 
     if (type === "loading") {
@@ -71,14 +72,18 @@
       statusHideTimer = null;
     }
 
+    function doHide() {
+      statusBar.hidden = true;
+      statusBar.classList.add("is-hidden");
+      statusText.textContent = "";
+    }
+
     if (delayMs) {
-      statusHideTimer = setTimeout(function () {
-        statusBar.hidden = true;
-      }, delayMs);
+      statusHideTimer = setTimeout(doHide, delayMs);
       return;
     }
 
-    statusBar.hidden = true;
+    doHide();
   }
 
   function updateMonthLabel() {
@@ -88,12 +93,23 @@
     });
   }
 
-  function formatClosureLabel(label) {
-    var text = String(label || "停課").trim();
-    if (text === "老師進修 停課" || text === "老師進修停課") {
-      return "老師進修<br>停課";
+  function renderClosureNotice(course) {
+    var label = String(course.label || "停課").trim();
+
+    if (/老師進修/.test(label) && /停課/.test(label)) {
+      return (
+        '<div class="cal-closure">' +
+          '<span class="cal-closure-line">老師進修</span>' +
+          '<span class="cal-closure-line">停課</span>' +
+        "</div>"
+      );
     }
-    return escapeHtml(text);
+
+    return (
+      '<div class="cal-closure">' +
+        '<span class="cal-closure-line">' + escapeHtml(label) + "</span>" +
+      "</div>"
+    );
   }
 
   function formatDateKey(year, month, day) {
@@ -166,11 +182,6 @@
 
   function isMondayDate(dateKey) {
     return new Date(dateKey + "T12:00:00").getDay() === 1;
-  }
-
-  function renderClosureNotice(course) {
-    var labelHtml = formatClosureLabel(course.label);
-    return '<div class="cal-closure">' + labelHtml + "</div>";
   }
 
   function renderCalendarCourseButton(course) {
@@ -523,7 +534,7 @@
 
   // ── 啟動 ──
   async function boot() {
-    statusBar.hidden = true;
+    hideStatus();
     memberSection.hidden = true;
     scheduleSection.hidden = true;
 
