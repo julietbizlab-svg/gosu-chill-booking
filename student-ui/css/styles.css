@@ -564,6 +564,71 @@ body {
   line-height: 1.7;
 }
 
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(47, 58, 58, 0.45);
+}
+
+.confirm-overlay.is-hidden,
+.confirm-overlay[hidden] {
+  display: none !important;
+}
+
+.confirm-dialog {
+  width: min(100%, 420px);
+  padding: 32px 24px 24px;
+  border-radius: 28px;
+  background: var(--card);
+  box-shadow: 0 16px 40px rgba(47, 58, 58, 0.2);
+  text-align: center;
+}
+
+.confirm-message {
+  margin: 0 0 28px;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.45;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.confirm-btn {
+  min-height: 68px;
+  border-radius: 18px;
+  border: none;
+  font: inherit;
+  font-size: 26px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.confirm-btn-cancel {
+  background: #fff;
+  color: var(--text);
+  border: 2px solid var(--line);
+}
+
+.confirm-btn-ok {
+  background: var(--deep-green);
+  color: #fff;
+}
+
+.confirm-btn:active {
+  filter: brightness(0.95);
+}
+
 .cal-courses {
   display: grid;
   gap: 5px;
@@ -607,8 +672,12 @@ body {
     font-size: 18px;
   }
 
-  .calendar-weekdays span {
-    font-size: 16px;
-    height: 44px;
+  .confirm-message {
+    font-size: 28px;
+  }
+
+  .confirm-btn {
+    min-height: 64px;
+    font-size: 24px;
   }
 }

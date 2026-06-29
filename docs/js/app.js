@@ -21,6 +21,10 @@
   var prevMonthBtn = document.getElementById("prev-month");
   var nextMonthBtn = document.getElementById("next-month");
   var devHint = document.getElementById("dev-hint");
+  var confirmOverlay = document.getElementById("confirm-overlay");
+  var confirmMessage = document.getElementById("confirm-message");
+  var confirmOkBtn = document.getElementById("confirm-ok");
+  var confirmCancelBtn = document.getElementById("confirm-cancel");
 
   var visibleMonth = new Date();
   visibleMonth.setDate(1);
@@ -65,6 +69,26 @@
   }
 
   var statusHideTimer = null;
+  var confirmResolver = null;
+
+  function showConfirm(message) {
+    return new Promise(function (resolve) {
+      confirmResolver = resolve;
+      confirmMessage.textContent = message;
+      confirmOverlay.hidden = false;
+      confirmOverlay.classList.remove("is-hidden");
+      confirmOkBtn.focus();
+    });
+  }
+
+  function closeConfirm(result) {
+    confirmOverlay.hidden = true;
+    confirmOverlay.classList.add("is-hidden");
+    if (confirmResolver) {
+      confirmResolver(result);
+      confirmResolver = null;
+    }
+  }
 
   function hideStatus(delayMs) {
     if (statusHideTimer) {
@@ -512,7 +536,7 @@
       return;
     }
 
-    var confirmed = window.confirm("確定要預約這堂課嗎？");
+    var confirmed = await showConfirm("確定要預約這堂課嗎？");
     if (!confirmed) {
       return;
     }
@@ -539,7 +563,7 @@
       return;
     }
 
-    var confirmed = window.confirm("確定要取消這堂課的預約嗎？");
+    var confirmed = await showConfirm("確定要取消這堂課的預約嗎？");
     if (!confirmed) {
       return;
     }
@@ -586,6 +610,14 @@
     } else if (action === "cancel") {
       handleCancel(courseId);
     }
+  });
+
+  confirmOkBtn.addEventListener("click", function () {
+    closeConfirm(true);
+  });
+
+  confirmCancelBtn.addEventListener("click", function () {
+    closeConfirm(false);
   });
 
   // ── 啟動 ──
