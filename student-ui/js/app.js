@@ -148,9 +148,19 @@
     );
   }
 
+  function isWeekendDate(dateKey) {
+    var date = new Date(dateKey + "T12:00:00");
+    var weekday = date.getDay();
+    return weekday === 0 || weekday === 6;
+  }
+
   function renderCalendarCell(day, dateKey, courses, isToday) {
     var dayCourses = courses || [];
     var cellClass = "calendar-cell";
+
+    if (isWeekendDate(dateKey)) {
+      cellClass += " is-weekend";
+    }
 
     if (isToday) {
       cellClass += " is-today";
