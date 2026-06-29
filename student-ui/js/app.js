@@ -15,7 +15,6 @@
   var creditsExpiry = document.getElementById("credits-expiry");
   var scheduleSection = document.getElementById("schedule-section");
   var monthLabel = document.getElementById("month-label");
-  var scheduleTitle = document.getElementById("schedule-title");
   var calendarGrid = document.getElementById("calendar-grid");
   var calendarNote = document.getElementById("calendar-note");
   var calendarPanel = document.getElementById("calendar-panel");
@@ -83,16 +82,18 @@
   }
 
   function updateMonthLabel() {
-    var monthNum = visibleMonth.getMonth() + 1;
-
     monthLabel.textContent = visibleMonth.toLocaleDateString("zh-TW", {
       year: "numeric",
       month: "long"
     });
+  }
 
-    if (scheduleTitle) {
-      scheduleTitle.textContent = monthNum + "月份課表";
+  function formatClosureLabel(label) {
+    var text = String(label || "停課").trim();
+    if (text === "老師進修 停課" || text === "老師進修停課") {
+      return "老師進修<br>停課";
     }
+    return escapeHtml(text);
   }
 
   function formatDateKey(year, month, day) {
@@ -168,9 +169,8 @@
   }
 
   function renderClosureNotice(course) {
-    return (
-      '<div class="cal-closure">' + escapeHtml(course.label || "停課") + "</div>"
-    );
+    var labelHtml = formatClosureLabel(course.label);
+    return '<div class="cal-closure">' + labelHtml + "</div>";
   }
 
   function renderCalendarCourseButton(course) {

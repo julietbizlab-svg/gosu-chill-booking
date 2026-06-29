@@ -66,14 +66,6 @@ body {
   margin-bottom: 24px;
 }
 
-.brand-mascot {
-  display: block;
-  width: 88px;
-  height: 88px;
-  margin: 0 auto 12px;
-  filter: drop-shadow(0 6px 12px rgba(180, 150, 160, 0.2));
-}
-
 .brand h1 {
   margin: 0;
   font-size: var(--font-title);
@@ -221,9 +213,9 @@ body {
 
 .month-header {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 16px;
 }
 
@@ -232,6 +224,47 @@ body {
   font-weight: 800;
   text-align: center;
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6a9e88;
+}
+
+.month-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 78px;
+  min-height: 76px;
+  padding: 8px 6px;
+  border: 3px solid var(--accent-deep);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f0faf5, var(--accent-soft));
+  color: var(--accent-deep);
+  font: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(126, 184, 160, 0.25);
+}
+
+.month-nav-btn:active {
+  background: var(--pink-soft);
+  transform: scale(0.97);
+}
+
+.month-nav-arrow {
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.month-nav-hint {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .icon-btn {
@@ -253,29 +286,8 @@ body {
 
 /* ── 整月課表月曆 ── */
 .calendar-panel {
-  position: relative;
   display: grid;
   gap: 10px;
-}
-
-.calendar-deco {
-  position: absolute;
-  width: 52px;
-  height: 52px;
-  opacity: 0.85;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.calendar-deco--left {
-  left: -4px;
-  bottom: -8px;
-  transform: scaleX(-1);
-}
-
-.calendar-deco--right {
-  right: -4px;
-  top: 28px;
 }
 
 .calendar-weekdays {
@@ -433,11 +445,11 @@ body {
 .cal-closure {
   padding: 6px 2px;
   color: #c53d3d;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   line-height: 1.35;
   text-align: center;
-  word-break: break-all;
+  word-break: keep-all;
 }
 
 .calendar-cell.is-closure-day {
@@ -568,8 +580,17 @@ body {
     min-height: 110px;
   }
 
+  .month-nav-btn {
+    min-width: 70px;
+    min-height: 72px;
+  }
+
+  .month-nav-hint {
+    font-size: 14px;
+  }
+
   .cal-closure {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .cal-day-num {

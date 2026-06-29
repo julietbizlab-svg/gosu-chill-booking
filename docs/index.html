@@ -7,14 +7,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="高手揪派預約">
   <title>高手揪派 · 課程預約</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260706">
+  <link rel="stylesheet" href="css/styles.css?v=20260707">
 </head>
 <body>
   <div class="page">
 
     <!-- 品牌區 -->
     <header class="brand">
-      <img class="brand-mascot" src="assets/mascot-yoga.svg" alt="" width="88" height="88">
       <h1>高手揪派</h1>
       <p class="brand-tag">課程預約</p>
     </header>
@@ -45,18 +44,21 @@
     </section>
 
     <!-- 課表與預約 -->
-    <section id="schedule-section" class="card" hidden aria-label="月份課表">
-      <h2 id="schedule-title" class="card-title">月份課表</h2>
+    <section id="schedule-section" class="card" hidden aria-label="課表">
       <p class="schedule-hint">點格子內課程即可預約或取消</p>
       <div class="month-header">
-        <button id="prev-month" class="icon-btn" type="button" aria-label="上個月">‹</button>
+        <button id="prev-month" class="month-nav-btn" type="button" aria-label="上一個月">
+          <span class="month-nav-arrow" aria-hidden="true">‹</span>
+          <span class="month-nav-hint">上一個月</span>
+        </button>
         <div id="month-label" class="month-label">—</div>
-        <button id="next-month" class="icon-btn" type="button" aria-label="下個月">›</button>
+        <button id="next-month" class="month-nav-btn" type="button" aria-label="下一個月">
+          <span class="month-nav-arrow" aria-hidden="true">›</span>
+          <span class="month-nav-hint">下一個月</span>
+        </button>
       </div>
 
       <div id="calendar-panel" class="calendar-panel">
-        <img class="calendar-deco calendar-deco--left" src="assets/mascot-wave.svg" alt="" width="56" height="56">
-        <img class="calendar-deco calendar-deco--right" src="assets/mascot-wave.svg" alt="" width="56" height="56">
         <div class="calendar-weekdays" aria-hidden="true">
           <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
         </div>
@@ -75,9 +77,9 @@
   </div>
 
   <!-- 設定 → LIFF 登入 → API → 主程式（順序不可改） -->
-  <script src="js/config.js?v=20260706"></script>
-  <script src="js/liff-init.js?v=20260706"></script>
-  <script src="js/api.js?v=20260706"></script>
-  <script src="js/app.js?v=20260706"></script>
+  <script src="js/config.js?v=20260707"></script>
+  <script src="js/liff-init.js?v=20260707"></script>
+  <script src="js/api.js?v=20260707"></script>
+  <script src="js/app.js?v=20260707"></script>
 </body>
 </html>
