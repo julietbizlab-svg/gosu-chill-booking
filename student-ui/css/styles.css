@@ -216,10 +216,17 @@ body {
 
 /* ── 月份切換 ── */
 .schedule-hint {
-  margin: -4px 0 18px;
-  color: var(--muted);
-  font-size: var(--font-small);
-  line-height: 1.5;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  text-align: center;
+  color: var(--accent-deep);
+  font-size: var(--font-large);
+  font-weight: 800;
+  line-height: 1.45;
+  background: linear-gradient(180deg, #fff8fb, var(--accent-soft));
+  border: 2px solid var(--accent-deep);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(126, 184, 160, 0.18);
 }
 
 .month-header {
