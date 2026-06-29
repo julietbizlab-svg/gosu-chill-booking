@@ -15,7 +15,7 @@
   var creditsExpiry = document.getElementById("credits-expiry");
   var scheduleSection = document.getElementById("schedule-section");
   var monthLabel = document.getElementById("month-label");
-  var courseList = document.getElementById("course-list");
+  var calendarGrid = document.getElementById("calendar-grid");
   var prevMonthBtn = document.getElementById("prev-month");
   var nextMonthBtn = document.getElementById("next-month");
   var devHint = document.getElementById("dev-hint");
@@ -60,7 +60,144 @@
     });
   }
 
-  // ── 示範資料（API 接上後會改為從後端讀取）──
+  function formatDateKey(year, month, day) {
+    return (
+      year + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0")
+    );
+  }
+
+  function getTodayKey() {
+    var now = new Date();
+    return formatDateKey(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  }
+
+  function parseTimeSortValue(timeStr) {
+    var part = (timeStr || "").split("~")[0].trim();
+    var match = part.match(/(\d{1,2}):(\d{2})/);
+    if (!match) return 0;
+    return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+  }
+
+  function getTimeStart(timeStr) {
+    return (timeStr || "").split("~")[0].trim();
+  }
+
+  function sortCoursesBySchedule(courses) {
+    return courses.slice().sort(function (a, b) {
+      if (a.date !== b.date) {
+        return a.date < b.date ? -1 : 1;
+      }
+      return parseTimeSortValue(a.time) - parseTimeSortValue(b.time);
+    });
+  }
+
+  function groupCoursesByDate(courses) {
+    var byDate = new Map();
+
+    courses.forEach(function (course) {
+      if (!byDate.has(course.date)) {
+        byDate.set(course.date, []);
+      }
+      byDate.get(course.date).push(course);
+    });
+
+    byDate.forEach(function (list) {
+      list.sort(function (a, b) {
+        return parseTimeSortValue(a.time) - parseTimeSortValue(b.time);
+      });
+    });
+
+    return byDate;
+  }
+
+  function isCourseBooked(course) {
+    return Boolean(course.isBooked) || bookedCourseIds.has(course.id);
+  }
+
+  function renderCalendarCourseButton(course) {
+    var isBooked = isCourseBooked(course);
+    var remaining = Number(course.capacity || 0) - Number(course.enrolled || 0);
+    var isFull = remaining <= 0 && !isBooked;
+    var action = isBooked ? "cancel" : "book";
+    var actionLabel = isBooked ? "已預約" : isFull ? "額滿" : "點我預約";
+    var className = "cal-course";
+
+    if (isBooked) {
+      className += " is-booked";
+    } else if (isFull) {
+      className += " is-full";
+    }
+
+    return (
+      '<button class="' + className + '" type="button" data-action="' + action + '" data-id="' +
+        escapeHtml(course.id) + '"' + (isFull ? " disabled" : "") + ">" +
+        '<span class="cal-course-name">' + escapeHtml(course.title) + "</span>" +
+        '<span class="cal-course-time">' + escapeHtml(getTimeStart(course.time)) + "</span>" +
+        '<span class="cal-course-action">' + escapeHtml(actionLabel) + "</span>" +
+      "</button>"
+    );
+  }
+
+  function renderCalendarCell(day, dateKey, courses, isToday) {
+    var dayCourses = courses || [];
+    var cellClass = "calendar-cell";
+
+    if (isToday) {
+      cellClass += " is-today";
+    }
+    if (dayCourses.length) {
+      cellClass += " has-courses";
+    }
+
+    var coursesHtml = dayCourses.length
+      ? dayCourses.map(renderCalendarCourseButton).join("")
+      : '<span class="cal-empty">—</span>';
+
+    return (
+      '<div class="' + cellClass + '" data-date="' + escapeHtml(dateKey) + '">' +
+        '<div class="cal-day-num">' + day + "</div>" +
+        '<div class="cal-courses">' + coursesHtml + "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderCalendar(courses) {
+    var year = visibleMonth.getFullYear();
+    var monthIndex = visibleMonth.getMonth();
+    var month = monthIndex + 1;
+    var firstWeekday = new Date(year, monthIndex, 1).getDay();
+    var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    var coursesByDate = groupCoursesByDate(sortCoursesBySchedule(courses));
+    var todayKey = getTodayKey();
+    var html = "";
+    var day;
+
+    for (day = 0; day < firstWeekday; day++) {
+      html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
+    }
+
+    for (day = 1; day <= daysInMonth; day++) {
+      var dateKey = formatDateKey(year, month, day);
+      html += renderCalendarCell(day, dateKey, coursesByDate.get(dateKey), dateKey === todayKey);
+    }
+
+    var totalCells = firstWeekday + daysInMonth;
+    var trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (day = 0; day < trailing; day++) {
+      html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
+    }
+
+    calendarGrid.innerHTML = html;
+
+    if (!courses.length) {
+      calendarGrid.insertAdjacentHTML(
+        "afterend",
+        '<p class="calendar-note">本月尚無可預約課程</p>'
+      );
+    }
+  }
+
+  // ── 示範資料 ──
   function getDemoMember(user) {
     return {
       displayName: user.displayName,
@@ -79,25 +216,34 @@
         id: prefix + "-yoga-am",
         title: "晨間瑜珈",
         date: prefix + "-05",
-        time: "09:00",
+        time: "09:00~10:00",
         instructor: "佳貞老師",
         capacity: 12,
         enrolled: 7
       },
       {
         id: prefix + "-yoga-pm",
-        title: "午後伸展",
+        title: "午後伸展｜下午",
         date: prefix + "-12",
-        time: "14:00",
+        time: "14:30~15:30",
         instructor: "佳貞老師",
         capacity: 12,
         enrolled: 10
       },
       {
         id: prefix + "-yoga-eve",
-        title: "晚間放鬆",
+        title: "晚間放鬆｜夜間",
+        date: prefix + "-12",
+        time: "19:30~20:30",
+        instructor: "佳貞老師",
+        capacity: 12,
+        enrolled: 4
+      },
+      {
+        id: prefix + "-yoga-late",
+        title: "流動瑜伽｜夜間",
         date: prefix + "-19",
-        time: "19:00",
+        time: "19:30~20:30",
         instructor: "佳貞老師",
         capacity: 12,
         enrolled: 4
@@ -140,109 +286,6 @@
     creditsExpiry.textContent = "到期日：" + member.expiresAt;
   }
 
-  function formatDayHeading(dateStr) {
-    var date = new Date(dateStr + "T12:00:00");
-    if (isNaN(date.getTime())) {
-      return dateStr;
-    }
-    return date.toLocaleDateString("zh-TW", {
-      month: "long",
-      day: "numeric",
-      weekday: "short"
-    });
-  }
-
-  function parseTimeSortValue(timeStr) {
-    var part = (timeStr || "").split("~")[0].trim();
-    var match = part.match(/(\d{1,2}):(\d{2})/);
-    if (!match) return 0;
-    return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
-  }
-
-  function sortCoursesBySchedule(courses) {
-    return courses.slice().sort(function (a, b) {
-      if (a.date !== b.date) {
-        return a.date < b.date ? -1 : 1;
-      }
-      return parseTimeSortValue(a.time) - parseTimeSortValue(b.time);
-    });
-  }
-
-  function groupCoursesByDate(courses) {
-    var groups = [];
-    var byDate = new Map();
-
-    courses.forEach(function (course) {
-      if (!byDate.has(course.date)) {
-        byDate.set(course.date, []);
-      }
-      byDate.get(course.date).push(course);
-    });
-
-    Array.from(byDate.keys()).sort().forEach(function (date) {
-      groups.push({
-        date: date,
-        courses: byDate.get(date)
-      });
-    });
-
-    return groups;
-  }
-
-  function renderCourseCard(course) {
-    var remaining = Number(course.capacity || 0) - Number(course.enrolled || 0);
-    var isBooked = Boolean(course.isBooked) || bookedCourseIds.has(course.id);
-    var isFull = remaining <= 0 && !isBooked;
-    var actionHtml;
-
-    if (isBooked) {
-      actionHtml =
-        '<button class="btn btn-danger" type="button" data-action="cancel" data-id="' +
-        escapeHtml(course.id) + '">取消預約</button>';
-    } else if (isFull) {
-      actionHtml =
-        '<button class="btn btn-primary" type="button" disabled>已額滿</button>';
-    } else {
-      actionHtml =
-        '<button class="btn btn-primary" type="button" data-action="book" data-id="' +
-        escapeHtml(course.id) + '">預約這堂課</button>';
-    }
-
-    return (
-      '<article class="course-item' + (isBooked ? " is-booked" : "") + '">' +
-        '<h4 class="course-title">' + escapeHtml(course.title) + '</h4>' +
-        '<p class="course-meta">' +
-          escapeHtml(course.time) +
-          (course.instructor ? " · " + escapeHtml(course.instructor) : "") +
-        '</p>' +
-        '<p class="course-seats">剩餘名額 ' + remaining + " / " + escapeHtml(course.capacity) + '</p>' +
-        '<div class="course-actions">' + actionHtml + '</div>' +
-      '</article>'
-    );
-  }
-
-  // ── 渲染課表（整月、依日期分組）──
-  function renderCourses(courses) {
-    var sorted = sortCoursesBySchedule(courses);
-    var groups = groupCoursesByDate(sorted);
-
-    if (!groups.length) {
-      courseList.innerHTML = '<div class="empty-msg">本月尚無可預約課程</div>';
-      return;
-    }
-
-    courseList.innerHTML = groups.map(function (group) {
-      return (
-        '<section class="day-group" aria-label="' + escapeHtml(formatDayHeading(group.date)) + '">' +
-          '<h3 class="day-heading">' + escapeHtml(formatDayHeading(group.date)) + '</h3>' +
-          '<div class="day-courses">' +
-            group.courses.map(renderCourseCard).join("") +
-          '</div>' +
-        '</section>'
-      );
-    }).join("");
-  }
-
   async function loadMember(user) {
     var member;
 
@@ -259,7 +302,12 @@
 
   async function loadCourses() {
     updateMonthLabel();
-    courseList.innerHTML = '<div class="empty-msg">讀取課表中…</div>';
+    calendarGrid.innerHTML = '<div class="empty-msg">讀取課表中…</div>';
+
+    var oldNote = document.querySelector(".calendar-note");
+    if (oldNote) {
+      oldNote.remove();
+    }
 
     var year = visibleMonth.getFullYear();
     var month = visibleMonth.getMonth() + 1;
@@ -278,7 +326,7 @@
       }
     });
 
-    renderCourses(courses);
+    renderCalendar(courses);
   }
 
   async function handleBook(courseId) {
@@ -349,7 +397,7 @@
     loadCourses();
   });
 
-  courseList.addEventListener("click", function (event) {
+  calendarGrid.addEventListener("click", function (event) {
     var button = event.target.closest("button[data-action]");
     if (!button || button.disabled) {
       return;

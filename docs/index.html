@@ -47,15 +47,20 @@
     <!-- 課表與預約 -->
     <section id="schedule-section" class="card" hidden aria-label="月份課表">
       <h2 class="card-title">月份課表</h2>
-      <p class="schedule-hint">以下為本月全部課程，可左右切換月份</p>
+      <p class="schedule-hint">點選月曆上有課的日期，即可預約或取消</p>
       <div class="month-header">
         <button id="prev-month" class="icon-btn" type="button" aria-label="上個月">‹</button>
         <div id="month-label" class="month-label">—</div>
         <button id="next-month" class="icon-btn" type="button" aria-label="下個月">›</button>
       </div>
 
-      <div id="course-list" class="course-list">
-        <div class="empty-msg">讀取中…</div>
+      <div id="calendar-wrap" class="calendar-wrap">
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+        </div>
+        <div id="calendar-grid" class="calendar-grid">
+          <div class="empty-msg">讀取中…</div>
+        </div>
       </div>
     </section>
 
