@@ -98,7 +98,7 @@
 
     if (/老師進修/.test(label) && /停課/.test(label)) {
       return (
-        '<div class="cal-closure">' +
+        '<div class="cal-closure closed">' +
           '<span class="cal-closure-line">老師進修</span>' +
           '<span class="cal-closure-line">停課</span>' +
         "</div>"
@@ -106,7 +106,7 @@
     }
 
     return (
-      '<div class="cal-closure">' +
+      '<div class="cal-closure closed">' +
         '<span class="cal-closure-line">' + escapeHtml(label) + "</span>" +
       "</div>"
     );
@@ -168,14 +168,6 @@
     return byDate;
   }
 
-  function getShortTitle(title) {
-    var short = String(title || "").split("｜")[0].trim();
-    if (short.length > 5) {
-      return short.slice(0, 4) + "…";
-    }
-    return short;
-  }
-
   function isCourseBooked(course) {
     return Boolean(course.isBooked) || bookedCourseIds.has(course.id);
   }
@@ -184,26 +176,84 @@
     return new Date(dateKey + "T12:00:00").getDay() === 1;
   }
 
+  function getWeekdayIndex(dateKey) {
+    return new Date(dateKey + "T12:00:00").getDay();
+  }
+
+  function getCourseThemeClass(title) {
+    var base = String(title || "").split("｜")[0];
+
+    if (/陰瑜伽|療癒/.test(base)) {
+      return "yin";
+    }
+    if (/彼拉提斯/.test(base)) {
+      return "pilates";
+    }
+    if (/階梯/.test(base)) {
+      return "step";
+    }
+    if (/椅子/.test(base)) {
+      return "chair";
+    }
+    if (/流動/.test(base)) {
+      return "flow";
+    }
+    if (/哈達/.test(base)) {
+      return "hatha";
+    }
+
+    return "yin";
+  }
+
+  function getCourseNameLines(title) {
+    var base = String(title || "").split("｜")[0].trim();
+
+    if (base.indexOf("療癒陰瑜伽") !== -1 || base === "療癒陰瑜伽") {
+      return ["療癒", "陰瑜伽"];
+    }
+    if (base.indexOf("階梯有氧") !== -1) {
+      return ["階梯", "有氧"];
+    }
+    if (base.indexOf("椅子瑜伽") !== -1) {
+      return ["椅子", "瑜伽"];
+    }
+    if (base.indexOf("流動瑜伽") !== -1) {
+      return ["流動", "瑜伽"];
+    }
+    if (base.indexOf("哈達瑜伽") !== -1) {
+      return ["哈達", "瑜伽"];
+    }
+    if (base.indexOf("彼拉提斯") !== -1) {
+      return ["彼拉提斯"];
+    }
+
+    return [base];
+  }
+
   function renderCalendarCourseButton(course) {
     var isBooked = isCourseBooked(course);
     var remaining = Number(course.capacity || 0) - Number(course.enrolled || 0);
     var isFull = remaining <= 0 && !isBooked;
     var action = isBooked ? "cancel" : "book";
     var actionLabel = isBooked ? "已約" : isFull ? "額滿" : "預約";
-    var className = "cal-course";
+    var className = "cal-course class-box " + getCourseThemeClass(course.title);
 
     if (isBooked) {
-      className += " is-booked";
+      className += " booked";
     } else if (isFull) {
       className += " is-full";
     }
 
+    var nameLines = getCourseNameLines(course.title).map(function (line) {
+      return '<span class="cal-course-line">' + escapeHtml(line) + "</span>";
+    }).join("");
+
     return (
       '<button class="' + className + '" type="button" data-action="' + action + '" data-id="' +
         escapeHtml(course.id) + '"' + (isFull ? " disabled" : "") + ">" +
-        '<span class="cal-course-name">' + escapeHtml(getShortTitle(course.title)) + "</span>" +
-        '<span class="cal-course-time">' + escapeHtml(getTimeStart(course.time)) + "</span>" +
-        '<span class="cal-course-action">' + escapeHtml(actionLabel) + "</span>" +
+        nameLines +
+        '<span class="cal-course-line">' + escapeHtml(getTimeStart(course.time)) + "</span>" +
+        '<span class="cal-course-line cal-course-action">' + escapeHtml(actionLabel) + "</span>" +
       "</button>"
     );
   }
@@ -226,6 +276,12 @@
 
     if (isWeekendDate(dateKey)) {
       cellClass += " is-weekend";
+      if (getWeekdayIndex(dateKey) === 0) {
+        cellClass += " is-sunday";
+      }
+      if (getWeekdayIndex(dateKey) === 6) {
+        cellClass += " is-saturday";
+      }
     }
 
     if (isMondayDate(dateKey)) {
@@ -247,7 +303,7 @@
 
     return (
       '<div class="' + cellClass + '" data-date="' + escapeHtml(dateKey) + '">' +
-        '<div class="cal-day-num">' + day + "</div>" +
+        '<div class="cal-day-num date">' + day + "</div>" +
         '<div class="cal-courses">' + coursesHtml + "</div>" +
       "</div>"
     );

@@ -3,19 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#a8d5c2">
+  <meta name="theme-color" content="#1F6B5F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="高手揪派預約">
   <title>高手揪派 · 課程預約</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260710">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=20260711">
 </head>
 <body>
   <div class="page">
 
     <!-- 品牌區 -->
     <header class="brand">
-      <h1>高手揪派</h1>
-      <p class="brand-tag">課程預約</p>
+      <h1 class="schedule-title">高手揪派</h1>
+      <p class="schedule-subtitle brand-tag">課程預約</p>
     </header>
 
     <!-- 狀態（僅錯誤或預約操作時顯示） -->
@@ -44,7 +47,7 @@
     </section>
 
     <!-- 課表與預約 -->
-    <section id="schedule-section" class="card" hidden aria-label="課表">
+    <section id="schedule-section" class="card schedule-wrap" hidden aria-label="課表">
       <p class="schedule-hint">
         <span class="schedule-hint-line">點格子內課程</span>
         <span class="schedule-hint-line">即可預約或取消</span>
@@ -80,9 +83,9 @@
   </div>
 
   <!-- 設定 → LIFF 登入 → API → 主程式（順序不可改） -->
-  <script src="js/config.js?v=20260708"></script>
-  <script src="js/liff-init.js?v=20260708"></script>
-  <script src="js/api.js?v=20260708"></script>
-  <script src="js/app.js?v=20260708"></script>
+  <script src="js/config.js?v=20260711"></script>
+  <script src="js/liff-init.js?v=20260711"></script>
+  <script src="js/api.js?v=20260711"></script>
+  <script src="js/app.js?v=20260711"></script>
 </body>
 </html>

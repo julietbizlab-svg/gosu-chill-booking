@@ -1,26 +1,29 @@
-/* 高手揪派 — 學員預約介面（柔和可愛 · 長輩友善） */
+/* 高手揪派 — 學員預約介面 */
 
 :root {
   color-scheme: light;
-  --bg: #fff8f5;
-  --card: #fffcfa;
-  --text: #4a4548;
-  --muted: #9a9198;
-  --accent: #7eb8a0;
-  --accent-deep: #5fa68a;
-  --accent-soft: #e5f5ee;
-  --pink-soft: #fce8ef;
-  --pink: #f4b8cc;
-  --lavender: #f3eef8;
-  --peach: #ffe8dc;
-  --line: #efe4df;
+  --bg: #F7FBF8;
+  --card: #FFFFFF;
+  --mint: #DCEFE7;
+  --sage: #8FBFAE;
+  --deep-green: #1F6B5F;
+  --soft-blue: #DDEFF8;
+  --soft-yellow: #F9E9B5;
+  --soft-lavender: #E8E3F5;
+  --soft-pink: #F7DDE3;
+  --line: #E7E2DC;
+  --text: #2F3A3A;
+  --muted: #8A9A96;
+  --danger: #D65A5A;
   --warn: #c9a04a;
-  --danger: #d4848f;
-  --shadow: 0 12px 32px rgba(180, 150, 160, 0.12);
-  --radius: 20px;
-  --font-base: 24px;
-  --font-small: 20px;
-  --font-large: 30px;
+  --accent: var(--sage);
+  --accent-deep: var(--deep-green);
+  --accent-soft: var(--mint);
+  --shadow: 0 12px 32px rgba(80, 120, 105, 0.12);
+  --radius: 36px;
+  --font-base: 22px;
+  --font-small: 18px;
+  --font-large: 26px;
   --font-title: clamp(34px, 8vw, 44px);
   --btn-height: 72px;
   --cal-cols: minmax(0, 0.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.5fr);
@@ -40,30 +43,22 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 20px 16px 40px;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(244, 184, 204, 0.22), transparent 42%),
-    radial-gradient(circle at 88% 12%, rgba(168, 213, 194, 0.25), transparent 40%),
-    radial-gradient(circle at 50% 100%, rgba(255, 232, 220, 0.5), transparent 50%),
-    var(--bg);
+  background: linear-gradient(180deg, #F7FBF8, #FDF8F3);
   color: var(--text);
-  font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
 .page {
-  width: min(100%, 720px);
+  width: min(100%, 1080px);
   margin: 0 auto;
 }
 
-#schedule-section.card {
-  padding: 20px 12px;
-  font-family: "Times New Roman", Times, "Songti TC", serif;
-}
-
-#schedule-section.card,
-#schedule-section.card * {
-  font-family: inherit;
+.schedule-wrap {
+  border-radius: 36px;
+  box-shadow: var(--shadow);
+  padding: 24px 16px;
 }
 
 /* ── 頂部品牌 ── */
@@ -72,18 +67,27 @@ body {
   margin-bottom: 24px;
 }
 
-.brand h1 {
+.schedule-title {
   margin: 0;
+  text-align: center;
   font-size: var(--font-title);
   font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #6a9e88;
+  letter-spacing: 0.08em;
+  color: var(--deep-green);
 }
 
+.schedule-subtitle,
 .brand-tag {
   margin: 8px 0 0;
-  color: var(--muted);
+  text-align: center;
   font-size: var(--font-small);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  color: var(--muted);
+}
+
+.brand h1 {
+  margin: 0;
 }
 
 /* ── 卡片 ── */
@@ -100,7 +104,24 @@ body {
   margin: 0 0 16px;
   font-size: var(--font-large);
   font-weight: 800;
-  color: #7aab96;
+  color: var(--deep-green);
+}
+
+.member-credits {
+  margin-top: 18px;
+  padding: 18px 28px;
+  border-radius: 24px;
+  background: linear-gradient(90deg, #E9F5EF, #F7FBF8);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+
+.credits-number {
+  display: block;
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--deep-green);
+  line-height: 1.1;
 }
 
 /* ── 狀態列 ── */
@@ -166,8 +187,8 @@ body {
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--pink);
-  background: var(--pink-soft);
+  border: 3px solid var(--mint);
+  background: var(--soft-pink);
   flex-shrink: 0;
 }
 
@@ -190,23 +211,6 @@ body {
   font-size: var(--font-small);
 }
 
-.member-credits {
-  margin-top: 18px;
-  padding: 18px;
-  border-radius: 18px;
-  background: linear-gradient(160deg, var(--accent-soft), var(--pink-soft));
-  border: 1px solid var(--line);
-  text-align: center;
-}
-
-.credits-number {
-  display: block;
-  font-size: 48px;
-  font-weight: 800;
-  color: var(--accent-deep);
-  line-height: 1.1;
-}
-
 .credits-label {
   display: block;
   margin-top: 4px;
@@ -223,14 +227,14 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  color: var(--accent-deep);
+  color: var(--deep-green);
   font-size: var(--font-large);
   font-weight: 800;
   line-height: 1.45;
-  background: linear-gradient(180deg, #fff8fb, var(--accent-soft));
-  border: 2px solid var(--accent-deep);
-  border-radius: 16px;
-  box-shadow: 0 4px 14px rgba(126, 184, 160, 0.18);
+  background: linear-gradient(90deg, #E9F5EF, #F7FBF8);
+  border: 2px solid var(--sage);
+  border-radius: 24px;
+  box-shadow: 0 4px 14px rgba(80, 120, 105, 0.12);
 }
 
 .schedule-hint-line {
@@ -255,7 +259,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6a9e88;
+  color: var(--deep-green);
 }
 
 .month-nav-btn {
@@ -267,18 +271,18 @@ body {
   min-width: 78px;
   min-height: 76px;
   padding: 8px 6px;
-  border: 3px solid var(--accent-deep);
+  border: 3px solid var(--deep-green);
   border-radius: 18px;
-  background: linear-gradient(180deg, #f0faf5, var(--accent-soft));
-  color: var(--accent-deep);
+  background: linear-gradient(180deg, #F7FBF8, var(--mint));
+  color: var(--deep-green);
   font: inherit;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(126, 184, 160, 0.25);
+  box-shadow: 0 4px 12px rgba(80, 120, 105, 0.18);
 }
 
 .month-nav-btn:active {
-  background: var(--pink-soft);
+  background: var(--soft-pink);
   transform: scale(0.97);
 }
 
@@ -309,52 +313,64 @@ body {
 }
 
 .icon-btn:active {
-  background: var(--pink-soft);
+  background: var(--soft-pink);
 }
 
 /* ── 整月課表月曆 ── */
 .calendar-panel {
   display: grid;
-  gap: 10px;
+  gap: 0;
+  border-radius: 22px;
+  overflow: hidden;
 }
 
 .calendar-weekdays {
   display: grid;
   grid-template-columns: var(--cal-cols);
-  gap: 4px;
+  gap: 0;
   text-align: center;
-  color: var(--muted);
-  font-size: 18px;
-  font-weight: 800;
+}
+
+.calendar-weekdays span {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--deep-green);
+  background: linear-gradient(90deg, #F8DDE2, #DCEFE7, #DDEFF8);
+  border: 1px solid #fff;
 }
 
 .calendar-weekdays span:first-child,
 .calendar-weekdays span:last-child {
-  font-size: 15px;
-  color: #c4b8c8;
+  font-size: 18px;
 }
 
 .calendar-weekdays span:nth-child(2) {
-  font-size: 16px;
   font-weight: 500;
-  color: #b8b0b6;
+  color: var(--muted);
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: var(--cal-cols);
-  gap: 5px;
+  gap: 0;
 }
 
 .calendar-cell {
-  min-height: 108px;
-  padding: 6px 4px 8px;
-  border: 2px solid var(--line);
-  border-radius: 14px;
-  background: #fffaf8;
+  min-height: 130px;
+  padding: 10px 6px;
+  border: 1px solid var(--line);
+  background: #fff;
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.calendar-cell.has-courses {
+  background: #fff;
 }
 
 .calendar-cell.is-padding {
@@ -365,151 +381,120 @@ body {
 }
 
 .calendar-cell.is-today {
-  border-color: var(--pink);
-  box-shadow: inset 0 0 0 1px var(--pink);
-  background: #fff8fb;
-}
-
-.calendar-cell.has-courses {
-  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--sage);
+  background: #F7FBF8;
 }
 
 .calendar-cell.is-monday:not(.has-courses):not(.is-closure-day) {
-  min-height: 58px;
-  padding: 4px 2px;
-  background: #f7f5f8;
-  border-color: #ebe6ee;
+  min-height: 80px;
+  background: #FAFCFB;
 }
 
-.calendar-cell.is-monday .cal-day-num {
+.calendar-cell.is-monday .date {
   font-weight: 500;
   color: var(--muted);
 }
 
 .calendar-cell.is-weekend:not(.has-courses) {
-  min-height: 64px;
-  padding: 4px 2px;
-  background: var(--lavender);
-  border-color: #e8dff0;
+  min-height: 80px;
 }
 
-.calendar-cell.is-weekend .cal-day-num {
-  font-size: 16px;
-  color: var(--muted);
+.calendar-cell.is-sunday .date {
+  color: #D45C78;
 }
 
-.calendar-cell.is-weekend.has-courses .cal-day-num {
-  color: var(--text);
+.calendar-cell.is-saturday {
+  background: #F2F8FC;
 }
 
-.cal-day-num {
-  font-size: 20px;
-  font-weight: 800;
+.calendar-cell.is-saturday .date {
+  color: #3E7BBE;
+}
+
+.cal-day-num,
+.date {
+  font-size: 22px;
+  font-weight: 700;
   line-height: 1;
-  color: var(--text);
+  color: #344040;
   text-align: center;
 }
 
-.calendar-cell.is-today .cal-day-num {
-  color: #e89ab0;
-}
-
-.cal-course {
-  width: 100%;
-  margin: 0;
+.cal-course,
+.class-box {
+  width: 86%;
+  margin: 8px auto 0;
   padding: 8px 4px;
   border: none;
-  border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent-deep);
-  font: inherit;
-  text-align: center;
-  cursor: pointer;
-  min-height: 58px;
+  border-radius: 18px;
+  min-height: 88px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 0;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
 }
 
-.cal-course-name {
+.cal-course-line {
   display: block;
+  width: 100%;
   font-size: 15px;
   font-weight: 800;
-  line-height: 1.2;
+  text-align: center;
 }
 
-.cal-course-time {
-  display: block;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-}
+.cal-course.yin { background: var(--mint); color: var(--deep-green); }
+.cal-course.pilates { background: var(--soft-yellow); color: #6B5B1F; }
+.cal-course.step { background: var(--soft-blue); color: #1F6B9A; }
+.cal-course.chair { background: #DDEFE2; color: #2A735E; }
+.cal-course.flow { background: var(--soft-lavender); color: #5B549A; }
+.cal-course.hatha { background: #E3F1E9; color: #1F6B5F; }
 
-.cal-course-action {
-  display: block;
-  margin-top: 2px;
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.cal-course.is-booked {
-  background: linear-gradient(145deg, #a8d5c2, #8ec4ad);
+.cal-course.booked {
+  background: #94CDB8;
   color: #fff;
 }
 
 .cal-course.is-full {
   background: #f0ebe8;
-  color: #b8b0b6;
+  color: var(--muted);
   cursor: not-allowed;
+  opacity: 0.75;
 }
 
 .cal-course:active:not(:disabled) {
-  filter: brightness(0.95);
+  filter: brightness(0.96);
 }
 
-.cal-closure {
+.cal-closure,
+.closed {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  min-height: 54px;
-  padding: 6px 3px;
-  color: #c53d3d;
+  gap: 4px;
+  min-height: 88px;
+  padding-top: 24px;
+  color: var(--danger);
   text-align: center;
 }
 
 .cal-closure-line {
   display: block;
   width: 100%;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.3;
   text-align: center;
 }
 
 .calendar-cell.is-closure-day {
-  background: #fff9f9;
-}
-
-.calendar-cell:not(.is-weekend):not(.is-monday).has-courses {
-  min-height: 118px;
-  padding: 8px 5px 10px;
-}
-
-.calendar-cell:not(.is-weekend):not(.is-monday) .cal-course-name {
-  font-size: 16px;
-}
-
-.calendar-cell:not(.is-weekend):not(.is-monday) .cal-course-time {
-  font-size: 15px;
-}
-
-.calendar-cell:not(.is-weekend):not(.is-monday) .cal-course-action {
-  font-size: 17px;
+  background: #fff;
 }
 
 .calendar-note {
@@ -535,7 +520,7 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(145deg, #8ec4ad, #7eb8a0);
+  background: var(--deep-green);
   color: #fff;
 }
 
@@ -603,57 +588,27 @@ body {
     text-align: center;
   }
 
-  .calendar-cell:not(.is-weekend):not(.is-monday) {
-    min-height: 100px;
+  .cal-course,
+  .class-box {
+    min-height: 76px;
+    width: 92%;
   }
 
-  .calendar-cell.is-monday:not(.has-courses):not(.is-closure-day) {
-    min-height: 48px;
-  }
-
-  .calendar-cell.is-weekend:not(.has-courses) {
-    min-height: 56px;
-  }
-
-  .calendar-cell:not(.is-weekend):not(.is-monday).has-courses {
-    min-height: 110px;
-  }
-
-  .month-nav-btn {
-    min-width: 70px;
-    min-height: 72px;
-  }
-
-  .month-nav-hint {
-    font-size: 14px;
-  }
-
-  .cal-closure-line {
+  .cal-course-line {
     font-size: 12px;
   }
 
+  .cal-closure-line {
+    font-size: 14px;
+  }
+
+  .date,
   .cal-day-num {
     font-size: 18px;
   }
 
-  .cal-course {
-    min-height: 52px;
-    padding: 6px 2px;
-  }
-
-  .cal-course-name {
-    font-size: 14px;
-  }
-
-  .cal-course-time {
-    font-size: 13px;
-  }
-
-  .cal-course-action {
-    font-size: 15px;
-  }
-
-  .calendar-weekdays {
+  .calendar-weekdays span {
     font-size: 16px;
+    height: 44px;
   }
 }
