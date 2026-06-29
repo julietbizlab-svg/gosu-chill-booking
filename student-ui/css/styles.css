@@ -600,33 +600,42 @@ body {
 
 .confirm-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 .confirm-btn {
-  min-height: 68px;
-  border-radius: 18px;
+  width: 100%;
+  border-radius: 20px;
   border: none;
   font: inherit;
-  font-size: 26px;
   font-weight: 800;
   cursor: pointer;
 }
 
 .confirm-btn-cancel {
+  min-height: 56px;
   background: #fff;
-  color: var(--text);
+  color: var(--muted);
   border: 2px solid var(--line);
+  font-size: 22px;
 }
 
 .confirm-btn-ok {
-  background: var(--deep-green);
+  min-height: 80px;
+  background: linear-gradient(180deg, #2A8577, var(--deep-green));
   color: #fff;
+  font-size: 34px;
+  letter-spacing: 0.12em;
+  box-shadow: 0 8px 20px rgba(31, 107, 95, 0.35);
 }
 
-.confirm-btn:active {
-  filter: brightness(0.95);
+.confirm-btn-ok:active {
+  transform: scale(0.98);
+  filter: brightness(0.96);
+}
+
+.confirm-btn-cancel:active {
+  filter: brightness(0.98);
 }
 
 .cal-courses {
@@ -672,12 +681,13 @@ body {
     font-size: 18px;
   }
 
-  .confirm-message {
-    font-size: 28px;
+  .confirm-btn-ok {
+    min-height: 76px;
+    font-size: 32px;
   }
 
-  .confirm-btn {
-    min-height: 64px;
-    font-size: 24px;
+  .confirm-btn-cancel {
+    min-height: 52px;
+    font-size: 20px;
   }
 }
