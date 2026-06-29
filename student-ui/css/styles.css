@@ -198,6 +198,12 @@ body {
 }
 
 /* ── 月份切換 ── */
+.schedule-hint {
+  margin: -8px 0 16px;
+  color: var(--muted);
+  font-size: var(--font-small);
+}
+
 .month-header {
   display: flex;
   align-items: center;
@@ -230,10 +236,31 @@ body {
   background: var(--accent-soft);
 }
 
-/* ── 課程列表 ── */
+/* ── 課程列表（整月、依日期分組）── */
 .course-list {
   display: grid;
-  gap: 14px;
+  gap: 20px;
+}
+
+.day-group {
+  display: grid;
+  gap: 12px;
+}
+
+.day-heading {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--font-large);
+  font-weight: 800;
+}
+
+.day-courses {
+  display: grid;
+  gap: 12px;
+  padding-left: 4px;
 }
 
 .course-item {

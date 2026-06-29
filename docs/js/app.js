@@ -53,19 +53,6 @@
     statusText.textContent = message;
   }
 
-  function formatDateText(dateStr, timeStr) {
-    var timePart = (timeStr || "00:00").split("~")[0].trim();
-    var date = new Date(dateStr + "T" + timePart + ":00");
-    if (isNaN(date.getTime())) {
-      return dateStr;
-    }
-    return date.toLocaleDateString("zh-TW", {
-      month: "long",
-      day: "numeric",
-      weekday: "long"
-    });
-  }
-
   function updateMonthLabel() {
     monthLabel.textContent = visibleMonth.toLocaleDateString("zh-TW", {
       year: "numeric",
@@ -153,44 +140,105 @@
     creditsExpiry.textContent = "到期日：" + member.expiresAt;
   }
 
-  // ── 渲染課表 ──
+  function formatDayHeading(dateStr) {
+    var date = new Date(dateStr + "T12:00:00");
+    if (isNaN(date.getTime())) {
+      return dateStr;
+    }
+    return date.toLocaleDateString("zh-TW", {
+      month: "long",
+      day: "numeric",
+      weekday: "short"
+    });
+  }
+
+  function parseTimeSortValue(timeStr) {
+    var part = (timeStr || "").split("~")[0].trim();
+    var match = part.match(/(\d{1,2}):(\d{2})/);
+    if (!match) return 0;
+    return parseInt(match[1], 10) * 60 + parseInt(match[2], 10);
+  }
+
+  function sortCoursesBySchedule(courses) {
+    return courses.slice().sort(function (a, b) {
+      if (a.date !== b.date) {
+        return a.date < b.date ? -1 : 1;
+      }
+      return parseTimeSortValue(a.time) - parseTimeSortValue(b.time);
+    });
+  }
+
+  function groupCoursesByDate(courses) {
+    var groups = [];
+    var byDate = new Map();
+
+    courses.forEach(function (course) {
+      if (!byDate.has(course.date)) {
+        byDate.set(course.date, []);
+      }
+      byDate.get(course.date).push(course);
+    });
+
+    Array.from(byDate.keys()).sort().forEach(function (date) {
+      groups.push({
+        date: date,
+        courses: byDate.get(date)
+      });
+    });
+
+    return groups;
+  }
+
+  function renderCourseCard(course) {
+    var remaining = Number(course.capacity || 0) - Number(course.enrolled || 0);
+    var isBooked = Boolean(course.isBooked) || bookedCourseIds.has(course.id);
+    var isFull = remaining <= 0 && !isBooked;
+    var actionHtml;
+
+    if (isBooked) {
+      actionHtml =
+        '<button class="btn btn-danger" type="button" data-action="cancel" data-id="' +
+        escapeHtml(course.id) + '">取消預約</button>';
+    } else if (isFull) {
+      actionHtml =
+        '<button class="btn btn-primary" type="button" disabled>已額滿</button>';
+    } else {
+      actionHtml =
+        '<button class="btn btn-primary" type="button" data-action="book" data-id="' +
+        escapeHtml(course.id) + '">預約這堂課</button>';
+    }
+
+    return (
+      '<article class="course-item' + (isBooked ? " is-booked" : "") + '">' +
+        '<h4 class="course-title">' + escapeHtml(course.title) + '</h4>' +
+        '<p class="course-meta">' +
+          escapeHtml(course.time) +
+          (course.instructor ? " · " + escapeHtml(course.instructor) : "") +
+        '</p>' +
+        '<p class="course-seats">剩餘名額 ' + remaining + " / " + escapeHtml(course.capacity) + '</p>' +
+        '<div class="course-actions">' + actionHtml + '</div>' +
+      '</article>'
+    );
+  }
+
+  // ── 渲染課表（整月、依日期分組）──
   function renderCourses(courses) {
-    if (!courses.length) {
+    var sorted = sortCoursesBySchedule(courses);
+    var groups = groupCoursesByDate(sorted);
+
+    if (!groups.length) {
       courseList.innerHTML = '<div class="empty-msg">本月尚無可預約課程</div>';
       return;
     }
 
-    courseList.innerHTML = courses.map(function (course) {
-      var remaining = Number(course.capacity || 0) - Number(course.enrolled || 0);
-      var isBooked = Boolean(course.isBooked) || bookedCourseIds.has(course.id);
-      var isFull = remaining <= 0 && !isBooked;
-
-      var actionHtml;
-
-      if (isBooked) {
-        actionHtml =
-          '<button class="btn btn-danger" type="button" data-action="cancel" data-id="' +
-          escapeHtml(course.id) + '">取消預約</button>';
-      } else if (isFull) {
-        actionHtml =
-          '<button class="btn btn-primary" type="button" disabled>已額滿</button>';
-      } else {
-        actionHtml =
-          '<button class="btn btn-primary" type="button" data-action="book" data-id="' +
-          escapeHtml(course.id) + '">預約這堂課</button>';
-      }
-
+    courseList.innerHTML = groups.map(function (group) {
       return (
-        '<article class="course-item' + (isBooked ? " is-booked" : "") + '">' +
-          '<h3 class="course-title">' + escapeHtml(course.title) + '</h3>' +
-          '<p class="course-meta">' +
-            escapeHtml(formatDateText(course.date, course.time)) +
-            " · " + escapeHtml(course.time) +
-            " · " + escapeHtml(course.instructor) +
-          '</p>' +
-          '<p class="course-seats">剩餘名額 ' + remaining + ' / ' + escapeHtml(course.capacity) + '</p>' +
-          '<div class="course-actions">' + actionHtml + '</div>' +
-        '</article>'
+        '<section class="day-group" aria-label="' + escapeHtml(formatDayHeading(group.date)) + '">' +
+          '<h3 class="day-heading">' + escapeHtml(formatDayHeading(group.date)) + '</h3>' +
+          '<div class="day-courses">' +
+            group.courses.map(renderCourseCard).join("") +
+          '</div>' +
+        '</section>'
       );
     }).join("");
   }
