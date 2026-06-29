@@ -378,9 +378,11 @@
     return {
       displayName: user.displayName,
       credits: 6,
+      remainingLessons: 6,
       card10: 1,
       card24: 0,
       expiresAt: "2026/12/31",
+      expireDate: "2026/12/31",
       status: "active"
     };
   }
@@ -447,6 +449,31 @@
     return member.displayName;
   }
 
+  function normalizeMemberData(member) {
+    return {
+      card10: member.card10 != null ? member.card10 : 0,
+      card24: member.card24 != null ? member.card24 : 0,
+      remainingLessons: member.remainingLessons != null
+        ? member.remainingLessons
+        : (member.credits != null ? member.credits : 0),
+      expireDate: member.expireDate || member.expiresAt || "—",
+      isTrial: Boolean(member.isTrial)
+    };
+  }
+
+  function renderMemberData(memberData) {
+    document.getElementById("card10").textContent = String(memberData.card10);
+    document.getElementById("card24").textContent = String(memberData.card24);
+    document.getElementById("remainingLessons").textContent = String(memberData.remainingLessons);
+
+    if (memberData.isTrial) {
+      document.querySelector(".expire").textContent =
+        "體驗期限：" + memberData.expireDate + "（贈送後兩週）";
+    } else {
+      document.querySelector(".expire").textContent = "到期日：" + memberData.expireDate;
+    }
+  }
+
   // ── 渲染學員資訊 ──
   function renderMember(user, member) {
     memberSection.hidden = false;
@@ -482,15 +509,7 @@
       devHint.hidden = true;
     }
 
-    card10El.textContent = String(member.card10 != null ? member.card10 : 0);
-    card24El.textContent = String(member.card24 != null ? member.card24 : 0);
-    remainingLessons.textContent = String(member.credits);
-
-    if (member.isTrial) {
-      creditsExpiry.textContent = "體驗期限：" + member.expiresAt + "（贈送後兩週）";
-    } else {
-      creditsExpiry.textContent = "到期日：" + member.expiresAt;
-    }
+    renderMemberData(normalizeMemberData(member));
   }
 
   async function loadMember(user) {
