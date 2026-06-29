@@ -112,6 +112,12 @@
 
   function sortCoursesBySchedule(courses) {
     return courses.slice().sort(function (a, b) {
+      if (a.type === "closure" && b.type !== "closure") {
+        return -1;
+      }
+      if (a.type !== "closure" && b.type === "closure") {
+        return 1;
+      }
       if (a.date !== b.date) {
         return a.date < b.date ? -1 : 1;
       }
@@ -150,6 +156,16 @@
     return Boolean(course.isBooked) || bookedCourseIds.has(course.id);
   }
 
+  function isMondayDate(dateKey) {
+    return new Date(dateKey + "T12:00:00").getDay() === 1;
+  }
+
+  function renderClosureNotice(course) {
+    return (
+      '<div class="cal-closure">' + escapeHtml(course.label || "停課") + "</div>"
+    );
+  }
+
   function renderCalendarCourseButton(course) {
     var isBooked = isCourseBooked(course);
     var remaining = Number(course.capacity || 0) - Number(course.enrolled || 0);
@@ -182,22 +198,34 @@
 
   function renderCalendarCell(day, dateKey, courses, isToday) {
     var dayCourses = courses || [];
+    var closures = dayCourses.filter(function (course) {
+      return course.type === "closure";
+    });
+    var bookableCourses = dayCourses.filter(function (course) {
+      return course.type !== "closure";
+    });
     var cellClass = "calendar-cell";
 
     if (isWeekendDate(dateKey)) {
       cellClass += " is-weekend";
     }
 
+    if (isMondayDate(dateKey)) {
+      cellClass += " is-monday";
+    }
+
     if (isToday) {
       cellClass += " is-today";
     }
-    if (dayCourses.length) {
+    if (bookableCourses.length) {
       cellClass += " has-courses";
     }
+    if (closures.length) {
+      cellClass += " is-closure-day";
+    }
 
-    var coursesHtml = dayCourses.length
-      ? dayCourses.map(renderCalendarCourseButton).join("")
-      : "";
+    var coursesHtml = closures.map(renderClosureNotice).join("") +
+      bookableCourses.map(renderCalendarCourseButton).join("");
 
     return (
       '<div class="' + cellClass + '" data-date="' + escapeHtml(dateKey) + '">' +
@@ -235,7 +263,9 @@
 
     calendarGrid.innerHTML = html;
 
-    if (!courses.length) {
+    if (!courses.some(function (course) {
+      return course.type !== "closure";
+    })) {
       calendarNote.textContent = "本月尚無可預約課程";
       calendarNote.hidden = false;
     } else {
@@ -258,6 +288,12 @@
     var prefix = year + "-" + monthStr;
 
     return [
+      {
+        id: prefix + "-closure-10",
+        type: "closure",
+        date: prefix + "-10",
+        label: "老師進修 停課"
+      },
       {
         id: prefix + "-yoga-am",
         title: "晨間瑜珈",

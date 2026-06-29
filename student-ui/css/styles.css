@@ -23,7 +23,7 @@
   --font-large: 30px;
   --font-title: clamp(34px, 8vw, 44px);
   --btn-height: 72px;
-  --cal-cols: minmax(0, 0.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.5fr);
+  --cal-cols: minmax(0, 0.5fr) minmax(0, 0.7fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.5fr);
 }
 
 *,
@@ -294,6 +294,12 @@ body {
   color: #c4b8c8;
 }
 
+.calendar-weekdays span:nth-child(2) {
+  font-size: 16px;
+  font-weight: 500;
+  color: #b8b0b6;
+}
+
 .calendar-grid {
   display: grid;
   grid-template-columns: var(--cal-cols);
@@ -328,6 +334,18 @@ body {
   background: #fff;
 }
 
+.calendar-cell.is-monday:not(.has-courses):not(.is-closure-day) {
+  min-height: 58px;
+  padding: 4px 2px;
+  background: #f7f5f8;
+  border-color: #ebe6ee;
+}
+
+.calendar-cell.is-monday .cal-day-num {
+  font-weight: 500;
+  color: var(--muted);
+}
+
 .calendar-cell.is-weekend:not(.has-courses) {
   min-height: 64px;
   padding: 4px 2px;
@@ -342,23 +360,6 @@ body {
 
 .calendar-cell.is-weekend.has-courses .cal-day-num {
   color: var(--text);
-}
-
-.calendar-cell:not(.is-weekend).has-courses {
-  min-height: 118px;
-  padding: 8px 5px 10px;
-}
-
-.calendar-cell:not(.is-weekend) .cal-course-name {
-  font-size: 16px;
-}
-
-.calendar-cell:not(.is-weekend) .cal-course-time {
-  font-size: 15px;
-}
-
-.calendar-cell:not(.is-weekend) .cal-course-action {
-  font-size: 17px;
 }
 
 .cal-day-num {
@@ -427,6 +428,37 @@ body {
 
 .cal-course:active:not(:disabled) {
   filter: brightness(0.95);
+}
+
+.cal-closure {
+  padding: 6px 2px;
+  color: #c53d3d;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  word-break: break-all;
+}
+
+.calendar-cell.is-closure-day {
+  background: #fff9f9;
+}
+
+.calendar-cell:not(.is-weekend):not(.is-monday).has-courses {
+  min-height: 118px;
+  padding: 8px 5px 10px;
+}
+
+.calendar-cell:not(.is-weekend):not(.is-monday) .cal-course-name {
+  font-size: 16px;
+}
+
+.calendar-cell:not(.is-weekend):not(.is-monday) .cal-course-time {
+  font-size: 15px;
+}
+
+.calendar-cell:not(.is-weekend):not(.is-monday) .cal-course-action {
+  font-size: 17px;
 }
 
 .calendar-note {
@@ -520,16 +552,24 @@ body {
     text-align: center;
   }
 
-  .calendar-cell:not(.is-weekend) {
+  .calendar-cell:not(.is-weekend):not(.is-monday) {
     min-height: 100px;
+  }
+
+  .calendar-cell.is-monday:not(.has-courses):not(.is-closure-day) {
+    min-height: 48px;
   }
 
   .calendar-cell.is-weekend:not(.has-courses) {
     min-height: 56px;
   }
 
-  .calendar-cell:not(.is-weekend).has-courses {
+  .calendar-cell:not(.is-weekend):not(.is-monday).has-courses {
     min-height: 110px;
+  }
+
+  .cal-closure {
+    font-size: 11px;
   }
 
   .cal-day-num {

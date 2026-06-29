@@ -84,6 +84,15 @@ export default {
         }
 
         var courseList = courses.map(function (course) {
+          if (course.isClosure) {
+            return {
+              id: course.id,
+              type: "closure",
+              date: course.date,
+              label: course.closureLabel
+            };
+          }
+
           return {
             id: course.id,
             title: course.title,

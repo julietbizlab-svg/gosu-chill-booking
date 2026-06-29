@@ -302,6 +302,20 @@ async function processMemberLifecycle(env, member) {
   return member;
 }
 
+function buildClosureLabel(remark) {
+  var text = (remark || "").trim();
+  if (/進修/.test(text) && /停課/.test(text)) {
+    return "老師進修 停課";
+  }
+  if (/停課/.test(text)) {
+    return "停課";
+  }
+  if (/休假/.test(text)) {
+    return "休假";
+  }
+  return text.slice(0, 16) || "停課";
+}
+
 function parseCoursePage(page) {
   var props = page.properties || {};
   var dateRaw = getCourseDate(props);
@@ -313,9 +327,10 @@ function parseCoursePage(page) {
   var hasStatus = Object.prototype.hasOwnProperty.call(props, "狀態");
   var statusValue = getSelectOrStatus(props, "狀態");
   var title = applyTimePeriodToCourseTitle(rawTitle, courseTime);
-  var isHoliday = /停課|休假|取消|未開課/.test(remark);
+  var isHoliday = /停課|休假|取消|未開課|進修/.test(remark);
   var isIncomplete = !rawTitle.trim() || !courseTime.trim();
   var isClosed = (hasStatus && statusValue !== "開放") || isHoliday || isIncomplete;
+  var isClosure = isHoliday && Boolean(dateRaw);
 
   return {
     id: page.id,
@@ -328,7 +343,9 @@ function parseCoursePage(page) {
     capacity: hasCapacity ? getNumber(props, "名額") : 12,
     enrolled: hasEnrolled ? getNumber(props, "已報名") : 0,
     status: isClosed ? "closed" : "open",
-    hasEnrolled: hasEnrolled
+    hasEnrolled: hasEnrolled,
+    isClosure: isClosure,
+    closureLabel: isClosure ? buildClosureLabel(remark) : ""
   };
 }
 
@@ -421,7 +438,13 @@ export async function getCoursesByMonth(env, year, month) {
   });
 
   return pages.map(parseCoursePage).filter(function (c) {
-    return c.status === "open" && c.date;
+    if (!c.date) {
+      return false;
+    }
+    if (c.status === "open") {
+      return true;
+    }
+    return c.isClosure;
   });
 }
 
