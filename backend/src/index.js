@@ -54,6 +54,8 @@ export default {
         return jsonResponse({
           displayName: member.displayName,
           credits: member.credits,
+          card10: member.card10,
+          card24: member.card24,
           expiresAt: member.expiresAt,
           status: member.status,
           isNew: false,

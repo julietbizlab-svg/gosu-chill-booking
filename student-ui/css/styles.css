@@ -181,7 +181,114 @@ body {
   50% { opacity: 1; transform: scale(1); }
 }
 
-/* ── 學員資訊 ── */
+/* ── 我的堂數 ── */
+.lesson-card {
+  padding: 24px 20px;
+}
+
+.section-title {
+  margin: 0 0 18px;
+  font-size: var(--font-large);
+  font-weight: 800;
+  color: var(--deep-green);
+  text-align: center;
+}
+
+.user-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.user-box .avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--mint);
+  background: var(--soft-pink);
+  flex-shrink: 0;
+}
+
+.user-box .hello {
+  font-size: var(--font-large);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.lesson-card .member-meta {
+  margin: -8px 0 16px;
+  text-align: center;
+}
+
+.lesson-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.lesson-panel {
+  border-radius: 22px;
+  padding: 16px 14px;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.lesson-panel.unopened {
+  background: linear-gradient(180deg, #FFF8E8, var(--soft-yellow));
+  border: 1px solid #F0E2B8;
+}
+
+.lesson-panel.remaining {
+  background: linear-gradient(180deg, #F2FAF6, var(--mint));
+  border: 1px solid #C8E3D8;
+}
+
+.panel-label {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--deep-green);
+  margin-bottom: 14px;
+}
+
+.ticket-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.ticket-row strong {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--deep-green);
+  line-height: 1;
+}
+
+.big-number {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--deep-green);
+  line-height: 1.1;
+  margin: 8px 0 10px;
+}
+
+.expire {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* ── 學員資訊（舊 class 保留相容）── */
 .member-row {
   display: flex;
   align-items: center;
@@ -688,7 +795,15 @@ body {
     padding: 18px 8px;
   }
 
-  .member-row {
+  .lesson-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .big-number {
+    font-size: 46px;
+  }
+
+  .user-box {
     flex-direction: column;
     text-align: center;
   }

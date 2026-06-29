@@ -199,6 +199,16 @@ function getCheckbox(props, name) {
   return Boolean(prop.checkbox);
 }
 
+function getNumberFlexible(props, names) {
+  var i;
+  for (i = 0; i < names.length; i++) {
+    if (Object.prototype.hasOwnProperty.call(props, names[i])) {
+      return getNumber(props, names[i]);
+    }
+  }
+  return 0;
+}
+
 function parseMemberPage(page) {
   var props = page.properties || {};
   var expiresRaw = getDateFlexible(props);
@@ -214,6 +224,8 @@ function parseMemberPage(page) {
       || getTitle(props, "姓名")
       || getTextOrTitle(props, "LINE userId"),
     credits: getNumber(props, "剩餘堂數"),
+    card10: getNumberFlexible(props, ["10堂課卡", "10堂課", "未開卡10堂"]),
+    card24: getNumberFlexible(props, ["24堂課卡", "24堂課", "未開卡24堂"]),
     expiresRaw: expiresRaw,
     expiresAt: formatDateZh(expiresRaw),
     trialGiftRaw: trialGiftRaw,

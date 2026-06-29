@@ -11,7 +11,9 @@
   var memberAvatar = document.getElementById("member-avatar");
   var memberName = document.getElementById("member-name");
   var memberMeta = document.getElementById("member-meta");
-  var creditsNumber = document.getElementById("credits-number");
+  var card10El = document.getElementById("card10");
+  var card24El = document.getElementById("card24");
+  var remainingLessons = document.getElementById("remainingLessons");
   var creditsExpiry = document.getElementById("credits-expiry");
   var scheduleSection = document.getElementById("schedule-section");
   var monthLabel = document.getElementById("month-label");
@@ -375,8 +377,10 @@
   function getDemoMember(user) {
     return {
       displayName: user.displayName,
-      credits: 8,
-      expiresAt: "2026/09/30",
+      credits: 6,
+      card10: 1,
+      card24: 0,
+      expiresAt: "2026/12/31",
       status: "active"
     };
   }
@@ -478,7 +482,9 @@
       devHint.hidden = true;
     }
 
-    creditsNumber.textContent = String(member.credits);
+    card10El.textContent = String(member.card10 != null ? member.card10 : 0);
+    card24El.textContent = String(member.card24 != null ? member.card24 : 0);
+    remainingLessons.textContent = String(member.credits);
 
     if (member.isTrial) {
       creditsExpiry.textContent = "體驗期限：" + member.expiresAt + "（贈送後兩週）";

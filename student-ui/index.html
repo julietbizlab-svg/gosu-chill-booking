@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=20260714">
+  <link rel="stylesheet" href="css/styles.css?v=20260715">
 </head>
 <body>
   <div class="page">
@@ -28,21 +28,36 @@
     </div>
 
     <!-- 學員資訊（LIFF 登入後顯示） -->
-    <section id="member-section" class="card" hidden aria-label="我的堂數">
-      <h2 class="card-title">我的堂數</h2>
+    <section id="member-section" class="card lesson-card" hidden aria-label="我的堂數">
+      <h2 class="section-title">我的堂數</h2>
 
-      <div class="member-row">
-        <img id="member-avatar" class="member-avatar" src="" alt="" width="72" height="72" hidden>
-        <div>
-          <p id="member-name" class="member-name">學員您好</p>
-          <p id="member-meta" class="member-meta" hidden></p>
-        </div>
+      <div class="user-box">
+        <img id="member-avatar" class="avatar" src="" alt="" width="72" height="72" hidden>
+        <div id="member-name" class="hello">學員您好</div>
       </div>
 
-      <div class="member-credits">
-        <span id="credits-number" class="credits-number">—</span>
-        <span class="credits-label">剩餘堂數</span>
-        <span id="credits-expiry" class="credits-label">到期日：—</span>
+      <p id="member-meta" class="member-meta" hidden></p>
+
+      <div class="lesson-grid">
+        <div class="lesson-panel unopened">
+          <div class="panel-label">未開卡</div>
+          <div class="ticket-row">
+            <span>10堂課</span>
+            <strong id="card10">0</strong>
+            <span>張</span>
+          </div>
+          <div class="ticket-row">
+            <span>24堂課</span>
+            <strong id="card24">0</strong>
+            <span>張</span>
+          </div>
+        </div>
+
+        <div class="lesson-panel remaining">
+          <div class="panel-label">剩餘堂數</div>
+          <div class="big-number" id="remainingLessons">—</div>
+          <div class="expire" id="credits-expiry">到期日：—</div>
+        </div>
       </div>
     </section>
 
@@ -93,9 +108,9 @@
   </div>
 
   <!-- 設定 → LIFF 登入 → API → 主程式（順序不可改） -->
-  <script src="js/config.js?v=20260714"></script>
-  <script src="js/liff-init.js?v=20260714"></script>
-  <script src="js/api.js?v=20260714"></script>
-  <script src="js/app.js?v=20260714"></script>
+  <script src="js/config.js?v=20260715"></script>
+  <script src="js/liff-init.js?v=20260715"></script>
+  <script src="js/api.js?v=20260715"></script>
+  <script src="js/app.js?v=20260715"></script>
 </body>
 </html>
