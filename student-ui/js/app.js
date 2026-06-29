@@ -444,17 +444,20 @@
         throw new Error("無法取得 LINE 身分，請從 LINE 重新開啟");
       }
 
-      setStatus("ok", "登入成功 · 您的編號：" + user.userId);
       scheduleSection.hidden = false;
 
       if (!window.gosuApi || !window.gosuApi.isConfigured()) {
         devHint.hidden = false;
+        setStatus("ok", "示範模式 · 編號：" + user.userId);
       } else {
         devHint.hidden = true;
       }
 
       await loadMember(user);
       await loadCourses();
+
+      var greetingName = getGreetingName(user, currentMember);
+      setStatus("ok", greetingName + " 您好，登入成功");
     } catch (error) {
       console.error("[APP]", error);
       setStatus("error", error.message || "發生未知錯誤");
