@@ -15,6 +15,7 @@
   var creditsExpiry = document.getElementById("credits-expiry");
   var scheduleSection = document.getElementById("schedule-section");
   var monthLabel = document.getElementById("month-label");
+  var scheduleTitle = document.getElementById("schedule-title");
   var calendarGrid = document.getElementById("calendar-grid");
   var calendarNote = document.getElementById("calendar-note");
   var calendarPanel = document.getElementById("calendar-panel");
@@ -82,10 +83,16 @@
   }
 
   function updateMonthLabel() {
+    var monthNum = visibleMonth.getMonth() + 1;
+
     monthLabel.textContent = visibleMonth.toLocaleDateString("zh-TW", {
       year: "numeric",
       month: "long"
     });
+
+    if (scheduleTitle) {
+      scheduleTitle.textContent = monthNum + "月份課表";
+    }
   }
 
   function formatDateKey(year, month, day) {
