@@ -48,6 +48,10 @@ body {
   margin: 0 auto;
 }
 
+#schedule-section.card {
+  padding: 20px 12px;
+}
+
 /* ── 頂部品牌 ── */
 .brand {
   text-align: center;
@@ -237,141 +241,134 @@ body {
   background: var(--accent-soft);
 }
 
-/* ── 課表：月曆總覽 + 大按鈕清單 ── */
-.schedule-panel {
+/* ── 整月課表月曆 ── */
+.calendar-panel {
   display: grid;
-  gap: 24px;
+  gap: 10px;
 }
 
-.month-overview {
-  padding: 14px 12px;
-  border-radius: 14px;
-  background: #faf8f4;
-  border: 1px solid var(--line);
-}
-
-.month-weekdays {
+.calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
-  margin-bottom: 8px;
   text-align: center;
   color: var(--muted);
   font-size: 18px;
   font-weight: 800;
 }
 
-.month-overview-grid {
+.calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.calendar-cell {
+  min-height: 108px;
+  padding: 6px 4px 8px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #faf8f4;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 
-.overview-cell {
-  aspect-ratio: 1;
+.calendar-cell.is-padding {
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.calendar-cell.is-today {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.calendar-cell.has-courses {
+  background: #fff;
+}
+
+.cal-day-num {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  text-align: center;
+}
+
+.calendar-cell.is-today .cal-day-num {
+  color: var(--accent);
+}
+
+.cal-courses {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+}
+
+.cal-course {
+  width: 100%;
+  margin: 0;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  min-height: 58px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  border-radius: 10px;
-  background: #fff;
-  border: 1px solid transparent;
+  gap: 2px;
 }
 
-.overview-cell.is-padding {
-  background: transparent;
-  border: none;
-}
-
-.overview-cell.is-today {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.overview-cell.has-courses .overview-day {
-  color: var(--accent);
+.cal-course-name {
+  display: block;
+  font-size: 15px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
-.overview-day {
-  font-size: 18px;
+.cal-course-time {
+  display: block;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.2;
 }
 
-.overview-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.cal-course-action {
+  display: block;
+  margin-top: 2px;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cal-course.is-booked {
   background: var(--accent);
+  color: #fff;
 }
 
-.schedule-list {
-  display: grid;
-  gap: 28px;
+.cal-course.is-full {
+  background: #ece8e0;
+  color: var(--muted);
+  cursor: not-allowed;
 }
 
-.day-block {
-  display: grid;
-  gap: 14px;
+.cal-course:active:not(:disabled) {
+  filter: brightness(0.95);
 }
 
-.day-heading {
-  margin: 0;
-  padding: 12px 16px;
-  border-radius: 14px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: var(--font-large);
-  font-weight: 800;
-  line-height: 1.35;
-}
-
-.day-courses {
-  display: grid;
-  gap: 16px;
-}
-
-.course-card {
-  padding: 20px 18px;
-  border: 2px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-}
-
-.course-card.is-booked {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-
-.course-card-title {
-  margin: 0 0 10px;
-  font-size: var(--font-large);
-  font-weight: 800;
-  line-height: 1.35;
-}
-
-.course-card-time {
-  margin: 0;
-  color: var(--text);
+.calendar-note {
+  margin: 8px 0 0;
+  text-align: center;
+  color: var(--muted);
   font-size: var(--font-small);
-  font-weight: 700;
-}
-
-.course-card-seats {
-  margin: 12px 0 0;
-  font-size: var(--font-small);
-  font-weight: 800;
-  color: var(--accent);
-}
-
-.course-card-actions {
-  margin-top: 18px;
-}
-
-.course-card-actions .btn {
-  font-size: var(--font-large);
 }
 
 /* ── 按鈕 ── */
@@ -443,11 +440,15 @@ body {
 
 @media (max-width: 480px) {
   body {
-    padding: 16px 14px 36px;
+    padding: 14px 8px 32px;
   }
 
   .card {
-    padding: 22px 16px;
+    padding: 20px 14px;
+  }
+
+  #schedule-section.card {
+    padding: 18px 8px;
   }
 
   .member-row {
@@ -455,19 +456,33 @@ body {
     text-align: center;
   }
 
-  .overview-day {
-    font-size: 17px;
+  .calendar-cell {
+    min-height: 96px;
+    padding: 5px 3px 6px;
   }
 
-  .month-weekdays {
+  .cal-day-num {
+    font-size: 18px;
+  }
+
+  .cal-course {
+    min-height: 52px;
+    padding: 6px 2px;
+  }
+
+  .cal-course-name {
+    font-size: 14px;
+  }
+
+  .cal-course-time {
+    font-size: 13px;
+  }
+
+  .cal-course-action {
+    font-size: 15px;
+  }
+
+  .calendar-weekdays {
     font-size: 16px;
-  }
-
-  .course-card {
-    padding: 18px 16px;
-  }
-
-  .course-card-actions .btn {
-    min-height: 68px;
   }
 }
