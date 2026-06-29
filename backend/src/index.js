@@ -3,7 +3,7 @@
  */
 import {
   ensureNotionEnv,
-  getMemberByUserId,
+  getOrCreateMember,
   getCoursesByMonth,
   getActiveBookingsByUser,
   bookCourse,
@@ -35,29 +35,21 @@ export default {
       if (url.pathname === "/api/member" && request.method === "GET") {
         ensureNotionEnv(env);
         var userId = url.searchParams.get("userId");
+        var lineDisplayName = url.searchParams.get("displayName") || "";
 
         if (!userId) {
           return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
         }
 
-        var member = await getMemberByUserId(env, userId);
-
-        if (!member) {
-          return jsonResponse({
-            displayName: "新學員",
-            credits: 0,
-            expiresAt: "—",
-            status: "pending",
-            isNew: true
-          }, corsHeaders);
-        }
+        var memberResult = await getOrCreateMember(env, userId, lineDisplayName);
 
         return jsonResponse({
-          displayName: member.displayName,
-          credits: member.credits,
-          expiresAt: member.expiresAt,
-          status: member.status,
-          isNew: false
+          displayName: memberResult.member.displayName,
+          credits: memberResult.member.credits,
+          expiresAt: memberResult.member.expiresAt,
+          status: memberResult.member.status,
+          isNew: false,
+          justRegistered: memberResult.created
         }, corsHeaders);
       }
 

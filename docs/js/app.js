@@ -251,37 +251,44 @@
     ];
   }
 
+  function getGreetingName(user, member) {
+    if (member.isNew || member.displayName === "新學員" || !member.displayName) {
+      return user.displayName || "學員";
+    }
+    return member.displayName;
+  }
+
   // ── 渲染學員資訊 ──
   function renderMember(user, member) {
     memberSection.hidden = false;
+    var greetingName = getGreetingName(user, member);
 
     if (user.pictureUrl) {
       memberAvatar.src = user.pictureUrl;
-      memberAvatar.alt = user.displayName + " 的頭像";
+      memberAvatar.alt = greetingName + " 的頭像";
       memberAvatar.hidden = false;
       memberAvatar.classList.remove("placeholder");
     } else {
       memberAvatar.hidden = true;
     }
 
-    memberName.textContent = member.displayName + " 您好";
+    memberName.textContent = greetingName + " 您好";
 
-    if (member.isNew || member.status === "pending") {
-      if (window.gosuUser && window.gosuUser.userId) {
-        memberMeta.textContent =
-          "帳號待開通 · 您的 LINE 編號：" + window.gosuUser.userId;
-      } else {
-        memberMeta.textContent = "帳號待開通 · 請聯絡工作室";
-      }
+    if (member.justRegistered) {
+      memberMeta.textContent = "已自動登記 · 請聯絡工作室開通堂數";
+      devHint.hidden = false;
+      devHint.textContent = "您的資料已寫入系統，工作室設定堂數後即可預約。";
+    } else if (member.status === "pending") {
+      memberMeta.textContent = "帳號審核中 · 請聯絡工作室";
+      devHint.hidden = true;
+    } else if (member.credits <= 0) {
+      memberMeta.textContent = "已登入 · 尚無可預約堂數，請聯絡工作室";
+      devHint.hidden = true;
     } else {
       memberMeta.textContent = "已自動登入 · 無需輸入密碼";
+      devHint.hidden = true;
     }
 
-    if (member.isNew && window.gosuUser && window.gosuUser.userId) {
-      devHint.hidden = false;
-      devHint.textContent =
-        "請把上方 LINE 編號貼到 Notion「學員資料」的「預約編號」欄，並設定剩餘堂數與狀態「有效」。";
-    }
     creditsNumber.textContent = String(member.credits);
     creditsExpiry.textContent = "到期日：" + member.expiresAt;
   }
@@ -290,7 +297,7 @@
     var member;
 
     if (window.gosuApi && window.gosuApi.isConfigured()) {
-      member = await window.gosuApi.getMember(user.userId);
+      member = await window.gosuApi.getMember(user.userId, user.displayName);
     } else {
       member = getDemoMember(user);
     }

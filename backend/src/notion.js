@@ -71,6 +71,21 @@ function getDateFlexible(props) {
   return getDate(props, "到期日") || getDate(props, "日期");
 }
 
+function getCourseDate(props) {
+  return getDate(props, "上課日期") || getDate(props, "日期");
+}
+
+function getCourseTime(props) {
+  return getRichText(props, "上課時間") || getRichText(props, "時間");
+}
+
+function buildMemberUserIdFilter(userId) {
+  return {
+    property: "預約編號",
+    title: { equals: userId }
+  };
+}
+
 function buildTextOrTitleFilter(propertyName, value) {
   return {
     or: [
@@ -114,13 +129,70 @@ function formatDateZh(isoDate) {
   return parts[0] + "/" + parts[1] + "/" + parts[2];
 }
 
+function parseStartHour(timeStr) {
+  var part = (timeStr || "").split("~")[0].trim();
+  var match = part.match(/(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  return parseInt(match[1], 10);
+}
+
+function getTimePeriodLabel(hour) {
+  if (hour === null || isNaN(hour)) return "";
+  if (hour >= 18) return "夜間";
+  if (hour >= 12) return "下午";
+  return "";
+}
+
+export function parseInstructorFromTitle(title) {
+  var parts = (title || "").trim().split("｜");
+  if (parts.length < 2) return "";
+
+  var second = parts[1].trim();
+  if (second === "下午" || second === "夜間") {
+    return parts.length >= 3 ? parts[2].trim() : "";
+  }
+
+  return second;
+}
+
+function extractBaseCourseName(title) {
+  var raw = (title || "").trim();
+  if (!raw) return raw;
+
+  var parts = raw.split("｜");
+  var name = parts[0].replace(/(下午|夜間)+$/, "").trim();
+
+  if (parts.length > 1) {
+    var second = parts[1].trim();
+    if (second === "下午" || second === "夜間") {
+      return name;
+    }
+  }
+
+  return name;
+}
+
+export function applyTimePeriodToCourseTitle(title, timeStr) {
+  var raw = (title || "").trim();
+  if (!raw) return raw;
+
+  var label = getTimePeriodLabel(parseStartHour(timeStr));
+  var baseName = extractBaseCourseName(raw);
+
+  if (!label) {
+    return baseName;
+  }
+
+  return baseName + "｜" + label;
+}
+
 function parseMemberPage(page) {
   var props = page.properties || {};
   var expiresRaw = getDateFlexible(props);
 
   return {
     id: page.id,
-    userId: getTextOrTitle(props, "LINE userId"),
+    userId: getTextOrTitle(props, "LINE userId") || getTitle(props, "預約編號"),
     displayName: getRichText(props, "姓名")
       || getRichText(props, "學員姓名")
       || getRichText(props, "学员姓名")
@@ -135,17 +207,27 @@ function parseMemberPage(page) {
 
 function parseCoursePage(page) {
   var props = page.properties || {};
-  var dateRaw = getDate(props, "上課日期");
+  var dateRaw = getCourseDate(props);
+  var courseTime = getCourseTime(props);
+  var hasCapacity = Object.prototype.hasOwnProperty.call(props, "名額");
+  var hasEnrolled = Object.prototype.hasOwnProperty.call(props, "已報名");
+  var hasStatus = Object.prototype.hasOwnProperty.call(props, "狀態");
+  var statusValue = getSelectOrStatus(props, "狀態");
+
+  var rawTitle = getTitle(props, "課程名稱");
 
   return {
     id: page.id,
-    title: getTitle(props, "課程名稱"),
+    title: applyTimePeriodToCourseTitle(rawTitle, courseTime),
     date: dateRaw,
-    time: getRichText(props, "上課時間"),
-    instructor: getRichText(props, "老師"),
-    capacity: getNumber(props, "名額"),
-    enrolled: getNumber(props, "已報名"),
-    status: getSelectOrStatus(props, "狀態") === "開放" ? "open" : "closed"
+    time: courseTime,
+    instructor: getRichText(props, "老師")
+      || parseInstructorFromTitle(rawTitle)
+      || "佳貞老師",
+    capacity: hasCapacity ? getNumber(props, "名額") : 12,
+    enrolled: hasEnrolled ? getNumber(props, "已報名") : 0,
+    status: !hasStatus || statusValue === "開放" ? "open" : "closed",
+    hasEnrolled: hasEnrolled
   };
 }
 
@@ -169,7 +251,7 @@ async function queryDatabase(token, databaseId, body) {
 
 export async function getMemberByUserId(env, userId) {
   var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_MEMBERS, {
-    filter: buildTextOrTitleFilter("LINE userId", userId),
+    filter: buildMemberUserIdFilter(userId),
     page_size: 1
   });
 
@@ -178,6 +260,27 @@ export async function getMemberByUserId(env, userId) {
   }
 
   return parseMemberPage(pages[0]);
+}
+
+export async function getOrCreateMember(env, userId, displayName) {
+  var existing = await getMemberByUserId(env, userId);
+  if (existing) {
+    return { member: existing, created: false };
+  }
+
+  var name = (displayName || "LINE學員").trim().slice(0, 100) || "LINE學員";
+
+  var page = await createPage(env.NOTION_TOKEN, env.NOTION_DATABASE_MEMBERS, {
+    "預約編號": { title: [{ text: { content: userId } }] },
+    "學員姓名": { rich_text: [{ text: { content: name } }] },
+    "剩餘堂數": { number: 0 },
+    "狀態": { select: { name: "有效" } }
+  });
+
+  return {
+    member: parseMemberPage(page),
+    created: true
+  };
 }
 
 export async function getCoursesByMonth(env, year, month) {
@@ -189,25 +292,26 @@ export async function getCoursesByMonth(env, year, month) {
   var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_COURSES, {
     filter: {
       and: [
-        { property: "上課日期", date: { on_or_after: start } },
-        { property: "上課日期", date: { on_or_before: end } },
-        buildStatusFilter("狀態", "開放")
+        { property: "日期", date: { on_or_after: start } },
+        { property: "日期", date: { on_or_before: end } }
       ]
     },
     sorts: [
-      { property: "上課日期", direction: "ascending" }
+      { property: "日期", direction: "ascending" }
     ]
   });
 
-  return pages.map(parseCoursePage).filter(function (c) { return c.status === "open"; });
+  return pages.map(parseCoursePage).filter(function (c) {
+    return c.status === "open" && c.date;
+  });
 }
 
 export async function getActiveBookingsByUser(env, userId) {
   var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_BOOKINGS, {
     filter: {
       and: [
-        buildTextOrTitleFilter("LINE userId", userId),
-        buildStatusFilter("狀態", "已確認")
+        { property: "LINE userId", rich_text: { equals: userId } },
+        { property: "狀態", select: { equals: "已確認" } }
       ]
     }
   });
@@ -225,18 +329,27 @@ export async function getActiveBookingsByUser(env, userId) {
 }
 
 export async function getBookingByUserAndCourse(env, userId, courseId) {
-  var bookingKey = courseId + "_" + userId;
   var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_BOOKINGS, {
     filter: {
       and: [
-        { property: "預約編號", title: { equals: bookingKey } },
-        buildStatusFilter("狀態", "已確認")
+        { property: "LINE userId", rich_text: { equals: userId } },
+        { property: "課程ID", rich_text: { equals: courseId } },
+        { property: "狀態", select: { equals: "已確認" } }
       ]
     },
     page_size: 1
   });
 
   return pages.length ? pages[0] : null;
+}
+
+function buildBookingTitle(member, course) {
+  var dateLabel = course.date || "";
+  if (dateLabel.length >= 10) {
+    dateLabel = dateLabel.slice(5).replace("-", "/");
+  }
+  var timeLabel = course.time || "";
+  return member.displayName + "｜" + course.title + "｜" + dateLabel + " " + timeLabel;
 }
 
 async function updatePage(token, pageId, properties) {
@@ -299,10 +412,13 @@ export async function bookCourse(env, userId, courseId) {
     throw new Error("這堂課已額滿");
   }
 
-  var bookingKey = courseId + "_" + userId;
+  var bookingTitle = buildBookingTitle(member, course).trim().slice(0, 200);
 
   await createPage(env.NOTION_TOKEN, env.NOTION_DATABASE_BOOKINGS, {
-    "預約編號": { title: [{ text: { content: bookingKey } }] },
+    "預約編號": { title: [{ text: { content: bookingTitle } }] },
+    "學員姓名": { rich_text: [{ text: { content: member.displayName } }] },
+    "課程名稱": { rich_text: [{ text: { content: course.title } }] },
+    "上課時間": { rich_text: [{ text: { content: ((course.date || "") + " " + (course.time || "")).trim() } }] },
     "LINE userId": { rich_text: [{ text: { content: userId } }] },
     "課程ID": { rich_text: [{ text: { content: courseId } }] },
     "狀態": { select: { name: "已確認" } }
@@ -312,9 +428,11 @@ export async function bookCourse(env, userId, courseId) {
     "剩餘堂數": { number: member.credits - 1 }
   });
 
-  await updatePage(env.NOTION_TOKEN, courseId, {
-    "已報名": { number: course.enrolled + 1 }
-  });
+  if (course.hasEnrolled) {
+    await updatePage(env.NOTION_TOKEN, courseId, {
+      "已報名": { number: course.enrolled + 1 }
+    });
+  }
 
   return {
     ok: true,
@@ -346,9 +464,11 @@ export async function cancelBooking(env, userId, courseId) {
     "剩餘堂數": { number: member.credits + 1 }
   });
 
-  await updatePage(env.NOTION_TOKEN, courseId, {
-    "已報名": { number: Math.max(0, course.enrolled - 1) }
-  });
+  if (course.hasEnrolled) {
+    await updatePage(env.NOTION_TOKEN, courseId, {
+      "已報名": { number: Math.max(0, course.enrolled - 1) }
+    });
+  }
 
   return {
     ok: true,
