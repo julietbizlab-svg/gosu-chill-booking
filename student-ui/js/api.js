@@ -47,11 +47,13 @@
   /** 查詢學員資料（第二階段實作） */
   window.gosuApi = {
     getMember: function (userId, displayName) {
-      var query = "/api/member?userId=" + encodeURIComponent(userId);
-      if (displayName) {
-        query += "&displayName=" + encodeURIComponent(displayName);
-      }
-      return apiFetch(query);
+      return apiFetch("/api/member", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: userId,
+          displayName: displayName || ""
+        })
+      });
     },
 
     getCourses: function (year, month, userId) {

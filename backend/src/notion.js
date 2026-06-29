@@ -4,17 +4,24 @@
  * 三個資料庫欄位名稱請與 Notion 完全一致：
  *
  * 【學員 Members】
- *   LINE userId (title) | 姓名 (text) | 剩餘堂數 (number) | 到期日 (date) | 狀態 (select: 有效/待審)
- *
- * 【課程 Courses】
- *   課程名稱 (title) | 上課日期 (date) | 上課時間 (text) | 老師 (text)
- *   名額 (number) | 已報名 (number) | 狀態 (select: 開放/關閉)
- *
- * 【預約 Bookings】
- *   預約編號 (title) | LINE userId (text) | 課程ID (text) | 狀態 (select: 已確認/已取消)
+ *   預約編號 (title) | 學員姓名 (text) | 剩餘堂數 (number) | 到期日 (date) | 狀態 (select)
+ *   體驗贈送日 (date) | 系統記錄堂數 (number) | 低堂數已提醒 (checkbox)
  */
 
+import {
+  addDays,
+  getEffectiveExpiryRaw,
+  getTrialExpiryDate,
+  isMemberExpiredByRules,
+  isTrialMember,
+  isoToday,
+  shouldExtendPurchaseExpiry,
+  validateTrialBooking
+} from "./member-rules.js";
+import { maybeNotifyLowCredits } from "./line-push.js";
+
 var NOTION_VERSION = "2022-06-28";
+var memberSchemaReady = false;
 
 export async function notionFetch(path, token, options) {
   var response = await fetch("https://api.notion.com/v1" + path, Object.assign({
@@ -186,11 +193,19 @@ export function applyTimePeriodToCourseTitle(title, timeStr) {
   return baseName + "｜" + label;
 }
 
+function getCheckbox(props, name) {
+  var prop = props[name];
+  if (!prop || prop.type !== "checkbox") return false;
+  return Boolean(prop.checkbox);
+}
+
 function parseMemberPage(page) {
   var props = page.properties || {};
   var expiresRaw = getDateFlexible(props);
+  var trialGiftRaw = getDate(props, "體驗贈送日");
+  var hasRecorded = Object.prototype.hasOwnProperty.call(props, "系統記錄堂數");
 
-  return {
+  var member = {
     id: page.id,
     userId: getTextOrTitle(props, "LINE userId") || getTitle(props, "預約編號"),
     displayName: getRichText(props, "姓名")
@@ -199,26 +214,112 @@ function parseMemberPage(page) {
       || getTitle(props, "姓名")
       || getTextOrTitle(props, "LINE userId"),
     credits: getNumber(props, "剩餘堂數"),
-    expiresAt: formatDateZh(expiresRaw),
     expiresRaw: expiresRaw,
+    expiresAt: formatDateZh(expiresRaw),
+    trialGiftRaw: trialGiftRaw,
+    systemRecordedCredits: hasRecorded ? getNumber(props, "系統記錄堂數") : null,
+    lowCreditNotified: getCheckbox(props, "低堂數已提醒"),
     status: getSelectOrStatus(props, "狀態") === "有效" ? "active" : "pending"
   };
+
+  member.expiresAt = formatDateZh(getEffectiveExpiryRaw(member));
+  return member;
+}
+
+async function ensureMemberSchema(env) {
+  if (memberSchemaReady) {
+    return;
+  }
+
+  var db = await notionFetch("/databases/" + env.NOTION_DATABASE_MEMBERS, env.NOTION_TOKEN, {
+    method: "GET"
+  });
+  var props = db.properties || {};
+  var patch = {};
+
+  if (!props["體驗贈送日"]) {
+    patch["體驗贈送日"] = { date: {} };
+  }
+  if (!props["系統記錄堂數"]) {
+    patch["系統記錄堂數"] = { number: {} };
+  }
+  if (!props["低堂數已提醒"]) {
+    patch["低堂數已提醒"] = { checkbox: {} };
+  }
+
+  if (Object.keys(patch).length) {
+    await notionFetch("/databases/" + env.NOTION_DATABASE_MEMBERS, env.NOTION_TOKEN, {
+      method: "PATCH",
+      body: JSON.stringify({ properties: patch })
+    });
+  }
+
+  memberSchemaReady = true;
+}
+
+async function processMemberLifecycle(env, member) {
+  await ensureMemberSchema(env);
+  var patch = {};
+  var credits = member.credits;
+  var recorded = member.systemRecordedCredits;
+
+  if (recorded === null) {
+    patch["系統記錄堂數"] = { number: credits };
+    member.systemRecordedCredits = credits;
+    recorded = credits;
+  }
+
+  if (isTrialMember(member)) {
+    var trialEnd = getTrialExpiryDate(member.trialGiftRaw);
+    if (member.expiresRaw !== trialEnd) {
+      patch["到期日"] = { date: { start: trialEnd } };
+      member.expiresRaw = trialEnd;
+    }
+  }
+
+  if (shouldExtendPurchaseExpiry(member, credits)) {
+    var purchaseExpiry = addDays(isoToday(), 90);
+    patch["到期日"] = { date: { start: purchaseExpiry } };
+    patch["系統記錄堂數"] = { number: credits };
+    patch["體驗贈送日"] = { date: null };
+    patch["低堂數已提醒"] = { checkbox: false };
+    member.expiresRaw = purchaseExpiry;
+    member.systemRecordedCredits = credits;
+    member.trialGiftRaw = "";
+    member.lowCreditNotified = false;
+  }
+
+  if (credits > 3 && member.lowCreditNotified) {
+    patch["低堂數已提醒"] = { checkbox: false };
+    member.lowCreditNotified = false;
+  }
+
+  if (Object.keys(patch).length) {
+    await updatePage(env.NOTION_TOKEN, member.id, patch);
+  }
+
+  member.expiresAt = formatDateZh(getEffectiveExpiryRaw(member));
+  return member;
 }
 
 function parseCoursePage(page) {
   var props = page.properties || {};
   var dateRaw = getCourseDate(props);
   var courseTime = getCourseTime(props);
+  var rawTitle = getTitle(props, "課程名稱");
+  var remark = getRichText(props, "備註");
   var hasCapacity = Object.prototype.hasOwnProperty.call(props, "名額");
   var hasEnrolled = Object.prototype.hasOwnProperty.call(props, "已報名");
   var hasStatus = Object.prototype.hasOwnProperty.call(props, "狀態");
   var statusValue = getSelectOrStatus(props, "狀態");
-
-  var rawTitle = getTitle(props, "課程名稱");
+  var title = applyTimePeriodToCourseTitle(rawTitle, courseTime);
+  var isHoliday = /停課|休假|取消|未開課/.test(remark);
+  var isIncomplete = !rawTitle.trim() || !courseTime.trim();
+  var isClosed = (hasStatus && statusValue !== "開放") || isHoliday || isIncomplete;
 
   return {
     id: page.id,
-    title: applyTimePeriodToCourseTitle(rawTitle, courseTime),
+    title: title,
     date: dateRaw,
     time: courseTime,
     instructor: getRichText(props, "老師")
@@ -226,7 +327,7 @@ function parseCoursePage(page) {
       || "佳貞老師",
     capacity: hasCapacity ? getNumber(props, "名額") : 12,
     enrolled: hasEnrolled ? getNumber(props, "已報名") : 0,
-    status: !hasStatus || statusValue === "開放" ? "open" : "closed",
+    status: isClosed ? "closed" : "open",
     hasEnrolled: hasEnrolled
   };
 }
@@ -259,26 +360,44 @@ export async function getMemberByUserId(env, userId) {
     return null;
   }
 
-  return parseMemberPage(pages[0]);
+  var member = parseMemberPage(pages[0]);
+  return processMemberLifecycle(env, member);
 }
 
 export async function getOrCreateMember(env, userId, displayName) {
   var existing = await getMemberByUserId(env, userId);
+  var cleanName = (displayName || "").trim().slice(0, 100);
+
   if (existing) {
+    if (cleanName && existing.displayName !== cleanName) {
+      await updatePage(env.NOTION_TOKEN, existing.id, {
+        "學員姓名": { rich_text: [{ text: { content: cleanName } }] }
+      });
+      existing.displayName = cleanName;
+    }
+
+    if (cleanName) {
+      await syncBookingRecordsForMember(env, userId, cleanName);
+    }
+
+    existing = await processMemberLifecycle(env, existing);
     return { member: existing, created: false };
   }
 
-  var name = (displayName || "LINE學員").trim().slice(0, 100) || "LINE學員";
+  var name = cleanName || "LINE學員";
 
   var page = await createPage(env.NOTION_TOKEN, env.NOTION_DATABASE_MEMBERS, {
     "預約編號": { title: [{ text: { content: userId } }] },
     "學員姓名": { rich_text: [{ text: { content: name } }] },
     "剩餘堂數": { number: 0 },
+    "系統記錄堂數": { number: 0 },
     "狀態": { select: { name: "有效" } }
   });
 
+  var member = parseMemberPage(page);
+  member.systemRecordedCredits = 0;
   return {
-    member: parseMemberPage(page),
+    member: member,
     created: true
   };
 }
@@ -352,6 +471,51 @@ function buildBookingTitle(member, course) {
   return member.displayName + "｜" + course.title + "｜" + dateLabel + " " + timeLabel;
 }
 
+function buildBookingTitleFromRecord(displayName, courseName, classTime) {
+  var classTimeStr = (classTime || "").trim();
+  var date = "";
+  var time = "";
+
+  if (classTimeStr.indexOf(" ") !== -1) {
+    var parts = classTimeStr.split(" ");
+    date = parts[0];
+    time = parts.slice(1).join(" ");
+  } else {
+    time = classTimeStr;
+  }
+
+  var dateLabel = date.length >= 10 ? date.slice(5).replace("-", "/") : date;
+  return (displayName + "｜" + courseName + "｜" + dateLabel + " " + time).trim().slice(0, 200);
+}
+
+async function syncBookingRecordsForMember(env, userId, displayName) {
+  var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_BOOKINGS, {
+    filter: {
+      property: "LINE userId",
+      rich_text: { equals: userId }
+    }
+  });
+
+  for (var i = 0; i < pages.length; i++) {
+    var page = pages[i];
+    var props = page.properties || {};
+    var currentName = getRichText(props, "學員姓名");
+
+    if (currentName === displayName) {
+      continue;
+    }
+
+    var courseName = getRichText(props, "課程名稱");
+    var classTime = getRichText(props, "上課時間");
+    var bookingTitle = buildBookingTitleFromRecord(displayName, courseName, classTime);
+
+    await updatePage(env.NOTION_TOKEN, page.id, {
+      "預約編號": { title: [{ text: { content: bookingTitle } }] },
+      "學員姓名": { rich_text: [{ text: { content: displayName } }] }
+    });
+  }
+}
+
 async function updatePage(token, pageId, properties) {
   return notionFetch("/pages/" + pageId, token, {
     method: "PATCH",
@@ -370,11 +534,7 @@ async function createPage(token, databaseId, properties) {
 }
 
 function isMemberExpired(member) {
-  if (!member.expiresRaw) return false;
-  var today = new Date();
-  today.setHours(0, 0, 0, 0);
-  var expires = new Date(member.expiresRaw + "T00:00:00");
-  return expires < today;
+  return isMemberExpiredByRules(member);
 }
 
 export async function bookCourse(env, userId, courseId) {
@@ -389,6 +549,9 @@ export async function bookCourse(env, userId, courseId) {
   }
 
   if (isMemberExpired(member)) {
+    if (isTrialMember(member)) {
+      throw new Error("體驗課已過期，請聯絡工作室購買正式課程（贈送後兩週內有效）");
+    }
     throw new Error("您的方案已過期，請聯絡工作室續約");
   }
 
@@ -412,7 +575,10 @@ export async function bookCourse(env, userId, courseId) {
     throw new Error("這堂課已額滿");
   }
 
+  validateTrialBooking(member, course.date);
+
   var bookingTitle = buildBookingTitle(member, course).trim().slice(0, 200);
+  var creditsLeft = member.credits - 1;
 
   await createPage(env.NOTION_TOKEN, env.NOTION_DATABASE_BOOKINGS, {
     "預約編號": { title: [{ text: { content: bookingTitle } }] },
@@ -425,7 +591,8 @@ export async function bookCourse(env, userId, courseId) {
   });
 
   await updatePage(env.NOTION_TOKEN, member.id, {
-    "剩餘堂數": { number: member.credits - 1 }
+    "剩餘堂數": { number: creditsLeft },
+    "系統記錄堂數": { number: creditsLeft }
   });
 
   if (course.hasEnrolled) {
@@ -434,10 +601,17 @@ export async function bookCourse(env, userId, courseId) {
     });
   }
 
+  var sent = await maybeNotifyLowCredits(env, member, creditsLeft);
+  if (sent) {
+    await updatePage(env.NOTION_TOKEN, member.id, {
+      "低堂數已提醒": { checkbox: true }
+    });
+  }
+
   return {
     ok: true,
     message: "預約成功",
-    creditsLeft: member.credits - 1
+    creditsLeft: creditsLeft
   };
 }
 
@@ -461,7 +635,8 @@ export async function cancelBooking(env, userId, courseId) {
   });
 
   await updatePage(env.NOTION_TOKEN, member.id, {
-    "剩餘堂數": { number: member.credits + 1 }
+    "剩餘堂數": { number: member.credits + 1 },
+    "系統記錄堂數": { number: member.credits + 1 }
   });
 
   if (course.hasEnrolled) {

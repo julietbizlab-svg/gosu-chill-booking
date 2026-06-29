@@ -252,8 +252,13 @@
   }
 
   function getGreetingName(user, member) {
-    if (member.isNew || member.displayName === "新學員" || !member.displayName) {
-      return user.displayName || "學員";
+    if (
+      member.isNew ||
+      member.displayName === "新學員" ||
+      member.displayName === "LINE學員" ||
+      !member.displayName
+    ) {
+      return user.displayName || member.displayName || "學員";
     }
     return member.displayName;
   }
@@ -290,7 +295,12 @@
     }
 
     creditsNumber.textContent = String(member.credits);
-    creditsExpiry.textContent = "到期日：" + member.expiresAt;
+
+    if (member.isTrial) {
+      creditsExpiry.textContent = "體驗期限：" + member.expiresAt + "（贈送後兩週）";
+    } else {
+      creditsExpiry.textContent = "到期日：" + member.expiresAt;
+    }
   }
 
   async function loadMember(user) {

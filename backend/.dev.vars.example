@@ -16,3 +16,6 @@ NOTION_DATABASE_COURSES=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # 預約紀錄資料庫 ID
 NOTION_DATABASE_BOOKINGS=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# LINE Messaging API Channel Access Token（剩 3 堂推播用，從 LINE Developers → Messaging API 取得）
+LINE_CHANNEL_ACCESS_TOKEN=

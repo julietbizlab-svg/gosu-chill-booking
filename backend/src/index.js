@@ -9,6 +9,7 @@ import {
   bookCourse,
   cancelBooking
 } from "./notion.js";
+import { isTrialMember } from "./member-rules.js";
 
 export default {
   async fetch(request, env) {
@@ -32,24 +33,35 @@ export default {
         }, corsHeaders);
       }
 
-      if (url.pathname === "/api/member" && request.method === "GET") {
+      if (url.pathname === "/api/member" && (request.method === "GET" || request.method === "POST")) {
         ensureNotionEnv(env);
         var userId = url.searchParams.get("userId");
         var lineDisplayName = url.searchParams.get("displayName") || "";
+
+        if (request.method === "POST") {
+          var memberBody = await readJson(request);
+          userId = memberBody.userId || userId;
+          lineDisplayName = memberBody.displayName || lineDisplayName;
+        }
 
         if (!userId) {
           return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
         }
 
         var memberResult = await getOrCreateMember(env, userId, lineDisplayName);
+        var member = memberResult.member;
 
         return jsonResponse({
-          displayName: memberResult.member.displayName,
-          credits: memberResult.member.credits,
-          expiresAt: memberResult.member.expiresAt,
-          status: memberResult.member.status,
+          displayName: member.displayName,
+          credits: member.credits,
+          expiresAt: member.expiresAt,
+          status: member.status,
           isNew: false,
-          justRegistered: memberResult.created
+          justRegistered: memberResult.created,
+          isTrial: isTrialMember(member),
+          trialExpiresAt: isTrialMember(member)
+            ? member.expiresAt
+            : ""
         }, corsHeaders);
       }
 
