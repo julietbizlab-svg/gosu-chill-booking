@@ -1,18 +1,23 @@
-/* 高手揪派 — 學員預約介面（長輩友善 · 極簡 Zen） */
+/* 高手揪派 — 學員預約介面（柔和可愛 · 長輩友善） */
 
 :root {
   color-scheme: light;
-  --bg: #f3efe6;
-  --card: #ffffff;
-  --text: #1a2420;
-  --muted: #5f6b66;
-  --accent: #2d6a4f;
-  --accent-soft: #d8eadf;
-  --line: #ddd8cc;
-  --warn: #9a6b00;
-  --danger: #a33b3b;
-  --shadow: 0 16px 40px rgba(26, 36, 32, 0.08);
-  --radius: 16px;
+  --bg: #fff8f5;
+  --card: #fffcfa;
+  --text: #4a4548;
+  --muted: #9a9198;
+  --accent: #7eb8a0;
+  --accent-deep: #5fa68a;
+  --accent-soft: #e5f5ee;
+  --pink-soft: #fce8ef;
+  --pink: #f4b8cc;
+  --lavender: #f3eef8;
+  --peach: #ffe8dc;
+  --line: #efe4df;
+  --warn: #c9a04a;
+  --danger: #d4848f;
+  --shadow: 0 12px 32px rgba(180, 150, 160, 0.12);
+  --radius: 20px;
   --font-base: 24px;
   --font-small: 20px;
   --font-large: 30px;
@@ -36,7 +41,9 @@ body {
   margin: 0;
   padding: 20px 16px 40px;
   background:
-    radial-gradient(circle at top, rgba(45, 106, 79, 0.08), transparent 45%),
+    radial-gradient(circle at 12% 8%, rgba(244, 184, 204, 0.22), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(168, 213, 194, 0.25), transparent 40%),
+    radial-gradient(circle at 50% 100%, rgba(255, 232, 220, 0.5), transparent 50%),
     var(--bg);
   color: var(--text);
   font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
@@ -59,17 +66,12 @@ body {
   margin-bottom: 24px;
 }
 
-.brand-mark {
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 16px;
-  display: grid;
-  place-items: center;
-  border-radius: 20px;
-  background: var(--accent);
-  color: #fff;
-  font-size: 34px;
-  font-weight: 800;
+.brand-mascot {
+  display: block;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 12px;
+  filter: drop-shadow(0 6px 12px rgba(180, 150, 160, 0.2));
 }
 
 .brand h1 {
@@ -77,10 +79,11 @@ body {
   font-size: var(--font-title);
   font-weight: 800;
   letter-spacing: 0.04em;
+  color: #6a9e88;
 }
 
-.brand p {
-  margin: 10px 0 0;
+.brand-tag {
+  margin: 8px 0 0;
   color: var(--muted);
   font-size: var(--font-small);
 }
@@ -99,6 +102,7 @@ body {
   margin: 0 0 16px;
   font-size: var(--font-large);
   font-weight: 800;
+  color: #7aab96;
 }
 
 /* ── 狀態列 ── */
@@ -116,8 +120,13 @@ body {
 }
 
 .status-bar.is-loading {
-  background: #eef2ef;
+  background: #f5f0f8;
   color: var(--muted);
+}
+
+.status-bar.is-ok {
+  background: var(--accent-soft);
+  color: var(--accent-deep);
 }
 
 .status-bar.is-error {
@@ -154,8 +163,8 @@ body {
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--accent-soft);
-  background: var(--accent-soft);
+  border: 3px solid var(--pink);
+  background: var(--pink-soft);
   flex-shrink: 0;
 }
 
@@ -181,8 +190,8 @@ body {
 .member-credits {
   margin-top: 18px;
   padding: 18px;
-  border-radius: 14px;
-  background: #faf8f4;
+  border-radius: 18px;
+  background: linear-gradient(160deg, var(--accent-soft), var(--pink-soft));
   border: 1px solid var(--line);
   text-align: center;
 }
@@ -191,7 +200,7 @@ body {
   display: block;
   font-size: 48px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-deep);
   line-height: 1.1;
 }
 
@@ -229,9 +238,9 @@ body {
   width: 60px;
   height: 60px;
   border: 2px solid var(--line);
-  border-radius: 14px;
+  border-radius: 18px;
   background: #fff;
-  color: var(--text);
+  color: #8ab8a6;
   font-size: 32px;
   line-height: 1;
   cursor: pointer;
@@ -239,13 +248,34 @@ body {
 }
 
 .icon-btn:active {
-  background: var(--accent-soft);
+  background: var(--pink-soft);
 }
 
 /* ── 整月課表月曆 ── */
 .calendar-panel {
+  position: relative;
   display: grid;
   gap: 10px;
+}
+
+.calendar-deco {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.calendar-deco--left {
+  left: -4px;
+  bottom: -8px;
+  transform: scaleX(-1);
+}
+
+.calendar-deco--right {
+  right: -4px;
+  top: 28px;
 }
 
 .calendar-weekdays {
@@ -261,7 +291,7 @@ body {
 .calendar-weekdays span:first-child,
 .calendar-weekdays span:last-child {
   font-size: 15px;
-  color: #8a9490;
+  color: #c4b8c8;
 }
 
 .calendar-grid {
@@ -274,8 +304,8 @@ body {
   min-height: 108px;
   padding: 6px 4px 8px;
   border: 2px solid var(--line);
-  border-radius: 12px;
-  background: #faf8f4;
+  border-radius: 14px;
+  background: #fffaf8;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -289,8 +319,9 @@ body {
 }
 
 .calendar-cell.is-today {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  border-color: var(--pink);
+  box-shadow: inset 0 0 0 1px var(--pink);
+  background: #fff8fb;
 }
 
 .calendar-cell.has-courses {
@@ -300,8 +331,8 @@ body {
 .calendar-cell.is-weekend:not(.has-courses) {
   min-height: 64px;
   padding: 4px 2px;
-  background: #f3f1ec;
-  border-color: #e8e4db;
+  background: var(--lavender);
+  border-color: #e8dff0;
 }
 
 .calendar-cell.is-weekend .cal-day-num {
@@ -339,13 +370,7 @@ body {
 }
 
 .calendar-cell.is-today .cal-day-num {
-  color: var(--accent);
-}
-
-.cal-courses {
-  display: grid;
-  gap: 5px;
-  flex: 1;
+  color: #e89ab0;
 }
 
 .cal-course {
@@ -353,9 +378,9 @@ body {
   margin: 0;
   padding: 8px 4px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-deep);
   font: inherit;
   text-align: center;
   cursor: pointer;
@@ -390,13 +415,13 @@ body {
 }
 
 .cal-course.is-booked {
-  background: var(--accent);
+  background: linear-gradient(145deg, #a8d5c2, #8ec4ad);
   color: #fff;
 }
 
 .cal-course.is-full {
-  background: #ece8e0;
-  color: var(--muted);
+  background: #f0ebe8;
+  color: #b8b0b6;
   cursor: not-allowed;
 }
 
@@ -427,7 +452,7 @@ body {
 }
 
 .btn-primary {
-  background: var(--accent);
+  background: linear-gradient(145deg, #8ec4ad, #7eb8a0);
   color: #fff;
 }
 
@@ -463,19 +488,18 @@ body {
 .hint-box {
   margin-top: 20px;
   padding: 16px;
-  border-radius: 14px;
-  background: #fff8e8;
-  border: 1px solid #f0dfa8;
+  border-radius: 18px;
+  background: #fff8ee;
+  border: 1px solid #f5e4c8;
   color: var(--warn);
   font-size: var(--font-small);
   line-height: 1.7;
 }
 
-.footer-note {
-  margin-top: 24px;
-  text-align: center;
-  color: var(--muted);
-  font-size: 16px;
+.cal-courses {
+  display: grid;
+  gap: 5px;
+  flex: 1;
 }
 
 @media (max-width: 480px) {

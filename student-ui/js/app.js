@@ -44,15 +44,41 @@
   }
 
   function setStatus(type, message) {
+    if (statusHideTimer) {
+      clearTimeout(statusHideTimer);
+      statusHideTimer = null;
+    }
+
+    statusBar.hidden = false;
     statusBar.className = "status-bar";
 
     if (type === "loading") {
       statusBar.classList.add("is-loading");
     } else if (type === "error") {
       statusBar.classList.add("is-error");
+    } else if (type === "ok") {
+      statusBar.classList.add("is-ok");
     }
 
     statusText.textContent = message;
+  }
+
+  var statusHideTimer = null;
+
+  function hideStatus(delayMs) {
+    if (statusHideTimer) {
+      clearTimeout(statusHideTimer);
+      statusHideTimer = null;
+    }
+
+    if (delayMs) {
+      statusHideTimer = setTimeout(function () {
+        statusBar.hidden = true;
+      }, delayMs);
+      return;
+    }
+
+    statusBar.hidden = true;
   }
 
   function updateMonthLabel() {
@@ -298,19 +324,23 @@
     }
 
     memberName.textContent = greetingName + " 您好";
+    memberMeta.hidden = true;
+    memberMeta.textContent = "";
 
     if (member.justRegistered) {
-      memberMeta.textContent = "已自動登記 · 請聯絡工作室開通堂數";
+      memberMeta.textContent = "請聯絡工作室開通堂數";
+      memberMeta.hidden = false;
       devHint.hidden = false;
       devHint.textContent = "您的資料已寫入系統，工作室設定堂數後即可預約。";
     } else if (member.status === "pending") {
       memberMeta.textContent = "帳號審核中 · 請聯絡工作室";
+      memberMeta.hidden = false;
       devHint.hidden = true;
     } else if (member.credits <= 0) {
-      memberMeta.textContent = "已登入 · 尚無可預約堂數，請聯絡工作室";
+      memberMeta.textContent = "尚無可預約堂數，請聯絡工作室";
+      memberMeta.hidden = false;
       devHint.hidden = true;
     } else {
-      memberMeta.textContent = "已自動登入 · 無需輸入密碼";
       devHint.hidden = true;
     }
 
@@ -388,6 +418,7 @@
       bookedCourseIds.add(courseId);
       await loadCourses();
       setStatus("ok", "預約成功！我們課堂見。");
+      hideStatus(2800);
     } catch (error) {
       setStatus("error", "預約失敗：" + error.message);
     }
@@ -414,6 +445,7 @@
       bookedCourseIds.delete(courseId);
       await loadCourses();
       setStatus("ok", "已取消預約，堂數會退還。");
+      hideStatus(2800);
     } catch (error) {
       setStatus("error", "取消失敗：" + error.message);
     }
@@ -448,7 +480,7 @@
 
   // ── 啟動 ──
   async function boot() {
-    setStatus("loading", "正在為您登入，請稍候…");
+    statusBar.hidden = true;
     memberSection.hidden = true;
     scheduleSection.hidden = true;
 
@@ -461,19 +493,11 @@
       }
 
       scheduleSection.hidden = false;
-
-      if (!window.gosuApi || !window.gosuApi.isConfigured()) {
-        devHint.hidden = false;
-        setStatus("ok", "示範模式 · 編號：" + user.userId);
-      } else {
-        devHint.hidden = true;
-      }
+      devHint.hidden = true;
 
       await loadMember(user);
       await loadCourses();
-
-      var greetingName = getGreetingName(user, currentMember);
-      setStatus("ok", greetingName + " 您好，登入成功");
+      hideStatus();
     } catch (error) {
       console.error("[APP]", error);
       setStatus("error", error.message || "發生未知錯誤");

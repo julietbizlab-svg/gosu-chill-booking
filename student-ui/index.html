@@ -3,24 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#2d6a4f">
+  <meta name="theme-color" content="#a8d5c2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="高手揪派預約">
   <title>高手揪派 · 課程預約</title>
-  <link rel="stylesheet" href="css/styles.css?v=20260703">
+  <link rel="stylesheet" href="css/styles.css?v=20260704">
 </head>
 <body>
   <div class="page">
 
     <!-- 品牌區 -->
     <header class="brand">
-      <div class="brand-mark" aria-hidden="true">揪</div>
+      <img class="brand-mascot" src="assets/mascot-yoga.svg" alt="" width="88" height="88">
       <h1>高手揪派</h1>
-      <p>課程預約 · 簡單好操作</p>
+      <p class="brand-tag">課程預約</p>
     </header>
 
-    <!-- 登入狀態 -->
-    <div id="status-bar" class="status-bar is-loading" role="status" aria-live="polite">
+    <!-- 狀態（僅錯誤或預約操作時顯示） -->
+    <div id="status-bar" class="status-bar is-loading" role="status" aria-live="polite" hidden>
       <span class="status-dot" aria-hidden="true"></span>
       <span id="status-text">正在啟動…</span>
     </div>
@@ -33,7 +33,7 @@
         <img id="member-avatar" class="member-avatar" src="" alt="" width="72" height="72" hidden>
         <div>
           <p id="member-name" class="member-name">學員您好</p>
-          <p id="member-meta" class="member-meta">已自動登入</p>
+          <p id="member-meta" class="member-meta" hidden></p>
         </div>
       </div>
 
@@ -55,6 +55,8 @@
       </div>
 
       <div id="calendar-panel" class="calendar-panel">
+        <img class="calendar-deco calendar-deco--left" src="assets/mascot-wave.svg" alt="" width="56" height="56">
+        <img class="calendar-deco calendar-deco--right" src="assets/mascot-wave.svg" alt="" width="56" height="56">
         <div class="calendar-weekdays" aria-hidden="true">
           <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
         </div>
@@ -70,13 +72,12 @@
       目前顯示的是示範課表。第二階段接上 Cloudflare Workers + Notion 後，會自動換成真實資料。
     </div>
 
-    <p class="footer-note">請從 LINE 官方帳號選單進入 · 無需記密碼</p>
   </div>
 
   <!-- 設定 → LIFF 登入 → API → 主程式（順序不可改） -->
-  <script src="js/config.js?v=20260703"></script>
-  <script src="js/liff-init.js?v=20260703"></script>
-  <script src="js/api.js?v=20260703"></script>
-  <script src="js/app.js?v=20260703"></script>
+  <script src="js/config.js?v=20260704"></script>
+  <script src="js/liff-init.js?v=20260704"></script>
+  <script src="js/api.js?v=20260704"></script>
+  <script src="js/app.js?v=20260704"></script>
 </body>
 </html>
