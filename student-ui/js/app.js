@@ -26,6 +26,7 @@
 
   /** @type {Set<string>} */
   var bookedCourseIds = new Set();
+  var currentMember = null;
 
   // ── 工具函式 ──
   function escapeHtml(value) {
@@ -53,7 +54,11 @@
   }
 
   function formatDateText(dateStr, timeStr) {
-    var date = new Date(dateStr + "T" + (timeStr || "00:00") + ":00");
+    var timePart = (timeStr || "00:00").split("~")[0].trim();
+    var date = new Date(dateStr + "T" + timePart + ":00");
+    if (isNaN(date.getTime())) {
+      return dateStr;
+    }
     return date.toLocaleDateString("zh-TW", {
       month: "long",
       day: "numeric",
@@ -129,9 +134,20 @@
     memberName.textContent = member.displayName + " 您好";
 
     if (member.isNew || member.status === "pending") {
-      memberMeta.textContent = "帳號待開通 · 請聯絡工作室";
+      if (window.gosuUser && window.gosuUser.userId) {
+        memberMeta.textContent =
+          "帳號待開通 · 您的 LINE 編號：" + window.gosuUser.userId;
+      } else {
+        memberMeta.textContent = "帳號待開通 · 請聯絡工作室";
+      }
     } else {
       memberMeta.textContent = "已自動登入 · 無需輸入密碼";
+    }
+
+    if (member.isNew && window.gosuUser && window.gosuUser.userId) {
+      devHint.hidden = false;
+      devHint.textContent =
+        "請把上方 LINE 編號貼到 Notion「學員資料」的「預約編號」欄，並設定剩餘堂數與狀態「有效」。";
     }
     creditsNumber.textContent = String(member.credits);
     creditsExpiry.textContent = "到期日：" + member.expiresAt;
@@ -188,6 +204,7 @@
       member = getDemoMember(user);
     }
 
+    currentMember = member;
     renderMember(user, member);
     return member;
   }
@@ -218,6 +235,11 @@
 
   async function handleBook(courseId) {
     if (!window.gosuUser) {
+      return;
+    }
+
+    if (currentMember && (currentMember.isNew || currentMember.credits <= 0)) {
+      setStatus("error", "尚無可預約堂數，請聯絡工作室開通帳號");
       return;
     }
 
@@ -309,7 +331,7 @@
         throw new Error("無法取得 LINE 身分，請從 LINE 重新開啟");
       }
 
-      setStatus("ok", "登入成功 · userId 已取得");
+      setStatus("ok", "登入成功 · 您的編號：" + user.userId);
       scheduleSection.hidden = false;
 
       if (!window.gosuApi || !window.gosuApi.isConfigured()) {
