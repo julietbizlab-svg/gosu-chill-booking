@@ -26,7 +26,7 @@
   --font-large: 26px;
   --font-title: clamp(34px, 8vw, 44px);
   --btn-height: 72px;
-  --cal-cols: minmax(0, 0.5fr) minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.5fr);
+  --cal-cols: minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
 *,
@@ -461,16 +461,7 @@ body {
   border: 1px solid #fff;
 }
 
-.calendar-weekdays span:first-child,
-.calendar-weekdays span:last-child {
-  font-size: 16px;
-  font-weight: 500;
-  color: #B8C4C0;
-  opacity: 0.55;
-  background: #F3F3F3;
-}
-
-.calendar-weekdays span:nth-child(2) {
+.calendar-weekdays span:first-child {
   font-weight: 500;
   color: var(--muted);
 }
@@ -515,34 +506,6 @@ body {
 .calendar-cell.is-monday .date {
   font-weight: 500;
   color: var(--muted);
-}
-
-.calendar-cell.is-weekend:not(.has-courses):not(.is-closure-day) {
-  min-height: 72px;
-  background: #F6F6F6;
-  opacity: 0.55;
-}
-
-.calendar-cell.is-sunday .date,
-.calendar-cell.is-saturday .date {
-  color: #B8C0BE;
-  font-weight: 500;
-}
-
-.calendar-cell.is-saturday {
-  background: #F4F7F9;
-}
-
-.calendar-cell.is-sunday .date {
-  color: #C8B4BA;
-}
-
-.calendar-cell.is-saturday .date {
-  color: #B0BEC8;
-}
-
-.calendar-cell.is-weekend.has-courses {
-  opacity: 0.85;
 }
 
 .cal-day-num,

@@ -198,12 +198,21 @@
     return Boolean(course.isBooked) || bookedCourseIds.has(course.id);
   }
 
-  function isMondayDate(dateKey) {
-    return new Date(dateKey + "T12:00:00").getDay() === 1;
-  }
-
   function getWeekdayIndex(dateKey) {
     return new Date(dateKey + "T12:00:00").getDay();
+  }
+
+  function isMondayDate(dateKey) {
+    return getWeekdayIndex(dateKey) === 1;
+  }
+
+  function isWeekdayDate(dateKey) {
+    var weekday = getWeekdayIndex(dateKey);
+    return weekday !== 0 && weekday !== 6;
+  }
+
+  function getWorkdayColumn(dateKey) {
+    return getWeekdayIndex(dateKey) - 1;
   }
 
   function getCourseThemeClass(title) {
@@ -284,12 +293,6 @@
     );
   }
 
-  function isWeekendDate(dateKey) {
-    var date = new Date(dateKey + "T12:00:00");
-    var weekday = date.getDay();
-    return weekday === 0 || weekday === 6;
-  }
-
   function renderCalendarCell(day, dateKey, courses, isToday) {
     var dayCourses = courses || [];
     var closures = dayCourses.filter(function (course) {
@@ -299,16 +302,6 @@
       return course.type !== "closure";
     });
     var cellClass = "calendar-cell";
-
-    if (isWeekendDate(dateKey)) {
-      cellClass += " is-weekend";
-      if (getWeekdayIndex(dateKey) === 0) {
-        cellClass += " is-sunday";
-      }
-      if (getWeekdayIndex(dateKey) === 6) {
-        cellClass += " is-saturday";
-      }
-    }
 
     if (isMondayDate(dateKey)) {
       cellClass += " is-monday";
@@ -339,26 +332,42 @@
     var year = visibleMonth.getFullYear();
     var monthIndex = visibleMonth.getMonth();
     var month = monthIndex + 1;
-    var firstWeekday = new Date(year, monthIndex, 1).getDay();
     var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
     var coursesByDate = groupCoursesByDate(sortCoursesBySchedule(courses));
     var todayKey = getTodayKey();
     var html = "";
+    var weekdayDays = [];
     var day;
-
-    for (day = 0; day < firstWeekday; day++) {
-      html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
-    }
 
     for (day = 1; day <= daysInMonth; day++) {
       var dateKey = formatDateKey(year, month, day);
-      html += renderCalendarCell(day, dateKey, coursesByDate.get(dateKey), dateKey === todayKey);
+      if (isWeekdayDate(dateKey)) {
+        weekdayDays.push({ day: day, dateKey: dateKey });
+      }
     }
 
-    var totalCells = firstWeekday + daysInMonth;
-    var trailing = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
-    for (day = 0; day < trailing; day++) {
-      html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
+    if (weekdayDays.length) {
+      var pad;
+      var leading = getWorkdayColumn(weekdayDays[0].dateKey);
+      for (pad = 0; pad < leading; pad++) {
+        html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
+      }
+    }
+
+    weekdayDays.forEach(function (item) {
+      html += renderCalendarCell(
+        item.day,
+        item.dateKey,
+        coursesByDate.get(item.dateKey),
+        item.dateKey === todayKey
+      );
+    });
+
+    if (weekdayDays.length) {
+      var trailing = 4 - getWorkdayColumn(weekdayDays[weekdayDays.length - 1].dateKey);
+      for (day = 0; day < trailing; day++) {
+        html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
+      }
     }
 
     calendarGrid.innerHTML = html;
