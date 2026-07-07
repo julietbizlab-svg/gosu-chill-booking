@@ -2,17 +2,26 @@
 
 :root {
   color-scheme: light;
-  --bg: #f7fbf8;
-  --card: #ffffff;
-  --mint: #dcefe7;
-  --sage: #8FBFAE;
-  --deep-green: #1f6b5f;
-  --line: #e7e2dc;
-  --text: #2f3a3a;
-  --muted: #8a9a96;
-  --danger: #d65a5a;
-  --warn: #c9a04a;
-  --shadow: 0 12px 32px rgba(80, 120, 105, 0.12);
+  --black: #1A1A1A;
+  --white: #FFFFFF;
+  --beige: #F5F0E8;
+  --beige-dark: #E8E0D4;
+  --gray-100: #F5F5F5;
+  --gray-200: #E8E8E8;
+  --gray-300: #D0D0D0;
+  --gray-500: #7A7A7A;
+  --gray-700: #4A4A4A;
+  --bg: #F5F0E8;
+  --card: #FFFFFF;
+  --mint: #EDE8E0;
+  --sage: #B8B8B8;
+  --deep-green: #1A1A1A;
+  --line: #E0DAD2;
+  --text: #1A1A1A;
+  --muted: #6B6B6B;
+  --danger: #4A4A4A;
+  --warn: #5C5C5C;
+  --shadow: 0 12px 32px rgba(26, 26, 26, 0.08);
   --font-base: 22px;
   --font-small: 18px;
   --font-title: clamp(30px, 7vw, 40px);
@@ -33,7 +42,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 20px 16px 40px;
-  background: linear-gradient(180deg, #f7fbf8, #fdf8f3);
+  background: linear-gradient(180deg, #F5F0E8, #FAFAF7);
   color: var(--text);
   font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   line-height: 1.6;
@@ -81,7 +90,7 @@ body {
   text-align: center;
   padding: 10px 8px;
   border-radius: 16px;
-  background: #f7fbf8;
+  background: #F0F0F0;
 }
 
 .summary-value {
@@ -184,22 +193,22 @@ body {
 }
 
 .calendar-cell.is-selected {
-  background: #eef7f2;
+  background: var(--beige);
   border-color: var(--deep-green);
   box-shadow: inset 0 0 0 1px var(--deep-green);
 }
 
 .calendar-cell.has-bookings {
-  background: #f2faf6;
+  background: var(--gray-100);
 }
 
 .calendar-cell.has-class {
-  background: #fafdfb;
+  background: #FAFAF7;
 }
 
 .calendar-cell.is-closure-day {
-  background: #fff8f8;
-  border-color: #f0c7c7;
+  background: var(--gray-100);
+  border-color: var(--gray-300);
 }
 
 .cal-day-num {
@@ -221,13 +230,13 @@ body {
 }
 
 .cal-badge.is-open {
-  background: #eef4f1;
+  background: var(--gray-200);
   color: var(--muted);
 }
 
 .cal-badge.is-closure {
-  background: #fdeeee;
-  color: var(--danger);
+  background: #E8E8E8;
+  color: var(--gray-700);
 }
 
 .calendar-hint {
@@ -304,18 +313,18 @@ body {
 }
 
 .status-panel.is-loading {
-  background: #eef7f2;
+  background: #F0F0F0;
   color: var(--deep-green);
 }
 
 .status-panel.is-error {
-  background: #fdeeee;
-  color: var(--danger);
+  background: #E8E8E8;
+  color: var(--gray-700);
 }
 
 .status-panel.is-forbidden {
-  background: #fff4df;
-  color: #9a6b00;
+  background: var(--gray-100);
+  color: var(--gray-700);
 }
 
 .status-panel.is-empty {
@@ -337,8 +346,8 @@ body {
 }
 
 .course-card.is-closure {
-  border-color: #f0c7c7;
-  background: #fff8f8;
+  border-color: var(--gray-300);
+  background: var(--gray-100);
 }
 
 .course-time {
@@ -370,8 +379,8 @@ body {
   margin: 10px 0 0;
   padding: 10px 12px;
   border-radius: 14px;
-  background: #fff4df;
-  color: #9a6b00;
+  background: var(--gray-100);
+  color: var(--gray-700);
   font-size: var(--font-small);
 }
 
@@ -390,7 +399,7 @@ body {
   gap: 12px;
   padding: 12px 14px;
   border-radius: 16px;
-  background: #f7fbf8;
+  background: #F0F0F0;
   border: 1px solid var(--line);
 }
 
@@ -424,8 +433,8 @@ body {
 }
 
 .student-type.is-trial {
-  background: #fff0d8;
-  color: #9a6b00;
+  background: var(--beige-dark);
+  color: var(--gray-700);
 }
 
 .student-type.is-unknown {
@@ -448,7 +457,7 @@ body {
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
-  background: rgba(31, 107, 95, 0.95);
+  background: rgba(26, 26, 26, 0.92);
   color: #fff;
   padding: 12px 18px;
   border-radius: 999px;

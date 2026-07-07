@@ -1,5 +1,20 @@
 /* 我的 LINE 編號 — 開通用畫面 */
 
+:root {
+  --black: #1A1A1A;
+  --white: #FFFFFF;
+  --beige: #F5F0E8;
+  --beige-dark: #E8E0D4;
+  --gray-100: #F5F5F5;
+  --gray-200: #E8E8E8;
+  --gray-500: #7A7A7A;
+  --gray-700: #4A4A4A;
+  --line: #E0DAD2;
+  --text: #1A1A1A;
+  --muted: #6B6B6B;
+  --shadow: 0 12px 32px rgba(26, 26, 26, 0.08);
+}
+
 .line-id-page {
   width: min(100%, 640px);
   margin: 0 auto;
@@ -15,21 +30,21 @@
   margin: 0;
   font-size: clamp(30px, 7vw, 40px);
   font-weight: 800;
-  color: #1f6b5f;
+  color: var(--black);
 }
 
 .line-id-subtitle {
   margin: 10px 0 0;
   font-size: 18px;
   line-height: 1.7;
-  color: #8a9a96;
+  color: var(--muted);
 }
 
 .line-id-card {
-  background: #fff;
-  border: 2px solid #e7e2dc;
+  background: var(--white);
+  border: 2px solid var(--line);
   border-radius: 24px;
-  box-shadow: 0 12px 32px rgba(80, 120, 105, 0.12);
+  box-shadow: var(--shadow);
   padding: 22px 18px;
   margin-bottom: 16px;
 }
@@ -37,7 +52,7 @@
 .line-id-label {
   margin: 0 0 8px;
   font-size: 18px;
-  color: #8a9a96;
+  color: var(--muted);
   text-align: center;
 }
 
@@ -46,20 +61,20 @@
   text-align: center;
   font-size: 24px;
   font-weight: 700;
-  color: #2f3a3a;
+  color: var(--text);
 }
 
 .line-id-value {
   margin: 0;
   padding: 16px 12px;
   border-radius: 16px;
-  background: #f7fbf8;
-  border: 1px dashed #8FBFAE;
+  background: var(--beige);
+  border: 1px dashed var(--gray-500);
   font-size: 16px;
   line-height: 1.5;
   word-break: break-all;
   text-align: center;
-  color: #1f6b5f;
+  color: var(--black);
   font-weight: 700;
 }
 
@@ -73,31 +88,31 @@
   min-height: 64px;
   border: none;
   border-radius: 18px;
-  background: #1f6b5f;
-  color: #fff;
+  background: var(--black);
+  color: var(--white);
   font-size: 22px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .line-id-btn-secondary {
-  background: #fff;
-  border: 2px solid #e7e2dc;
-  color: #1f6b5f;
+  background: var(--white);
+  border: 2px solid var(--line);
+  color: var(--black);
 }
 
 .line-id-steps {
   margin: 0;
   padding: 18px 18px 18px 36px;
   border-radius: 20px;
-  background: #fff8ef;
-  color: #6a5a40;
+  background: var(--beige);
+  color: var(--gray-700);
   font-size: 18px;
   line-height: 1.8;
 }
 
 .line-id-steps strong {
-  color: #1f6b5f;
+  color: var(--black);
 }
 
 .line-id-status {
@@ -109,13 +124,13 @@
 }
 
 .line-id-status.is-loading {
-  background: #eef7f2;
-  color: #1f6b5f;
+  background: var(--gray-100);
+  color: var(--black);
 }
 
 .line-id-status.is-error {
-  background: #fdeeee;
-  color: #d65a5a;
+  background: var(--gray-200);
+  color: var(--gray-700);
 }
 
 .line-id-toast {
@@ -123,8 +138,8 @@
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
-  background: rgba(31, 107, 95, 0.95);
-  color: #fff;
+  background: rgba(26, 26, 26, 0.92);
+  color: var(--white);
   padding: 12px 18px;
   border-radius: 999px;
   font-size: 18px;
@@ -143,8 +158,8 @@
 }
 
 .forbidden-panel .line-id-card {
-  border-color: #f0d7a6;
-  background: #fffdf8;
+  border-color: var(--beige-dark);
+  background: #FAFAF7;
 }
 
 .forbidden-title {
@@ -152,7 +167,7 @@
   text-align: center;
   font-size: 24px;
   font-weight: 800;
-  color: #9a6b00;
+  color: var(--black);
 }
 
 .forbidden-text {
@@ -160,5 +175,5 @@
   text-align: center;
   font-size: 18px;
   line-height: 1.7;
-  color: #6a5a40;
+  color: var(--gray-700);
 }

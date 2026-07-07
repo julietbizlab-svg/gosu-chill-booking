@@ -2,30 +2,39 @@
 
 :root {
   color-scheme: light;
-  --bg: #F7FBF8;
+  --black: #1A1A1A;
+  --white: #FFFFFF;
+  --beige: #F5F0E8;
+  --beige-dark: #E8E0D4;
+  --gray-100: #F5F5F5;
+  --gray-200: #E8E8E8;
+  --gray-300: #D0D0D0;
+  --gray-500: #7A7A7A;
+  --gray-700: #4A4A4A;
+  --bg: #F5F0E8;
   --card: #FFFFFF;
-  --mint: #DCEFE7;
-  --sage: #8FBFAE;
-  --deep-green: #1F6B5F;
-  --soft-blue: #DDEFF8;
-  --soft-yellow: #F9E9B5;
-  --soft-lavender: #E8E3F5;
-  --soft-pink: #F7DDE3;
-  --line: #E7E2DC;
-  --text: #2F3A3A;
-  --muted: #8A9A96;
-  --danger: #D65A5A;
-  --warn: #c9a04a;
-  --accent: var(--sage);
-  --accent-deep: var(--deep-green);
-  --accent-soft: var(--mint);
-  --shadow: 0 12px 32px rgba(80, 120, 105, 0.12);
+  --mint: #EDE8E0;
+  --sage: #B8B8B8;
+  --deep-green: #1A1A1A;
+  --soft-blue: #E8E8E8;
+  --soft-yellow: #F0EBE3;
+  --soft-lavender: #E5E5E5;
+  --soft-pink: #EBEBEB;
+  --line: #E0DAD2;
+  --text: #1A1A1A;
+  --muted: #6B6B6B;
+  --danger: #4A4A4A;
+  --warn: #5C5C5C;
+  --accent: #1A1A1A;
+  --accent-deep: #000000;
+  --accent-soft: #EDE8E0;
+  --shadow: 0 12px 32px rgba(26, 26, 26, 0.08);
   --radius: 36px;
-  --font-base: 22px;
-  --font-small: 18px;
-  --font-large: 26px;
-  --font-title: clamp(34px, 8vw, 44px);
-  --btn-height: 72px;
+  --font-base: 26px;
+  --font-small: 22px;
+  --font-large: 30px;
+  --font-title: clamp(38px, 8vw, 48px);
+  --btn-height: 76px;
   --cal-cols: minmax(0, 0.85fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
 }
 
@@ -43,7 +52,7 @@ body {
   min-height: 100vh;
   margin: 0;
   padding: 20px 16px 40px;
-  background: linear-gradient(180deg, #F7FBF8, #FDF8F3);
+  background: linear-gradient(180deg, #F5F0E8, #FAFAF7);
   color: var(--text);
   font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
   line-height: 1.6;
@@ -117,14 +126,14 @@ body {
   margin-top: 18px;
   padding: 18px 28px;
   border-radius: 24px;
-  background: linear-gradient(90deg, #E9F5EF, #F7FBF8);
+  background: linear-gradient(90deg, #EDE8E0, #F5F0E8);
   border: 1px solid var(--line);
   text-align: center;
 }
 
 .credits-number {
   display: block;
-  font-size: 48px;
+  font-size: 56px;
   font-weight: 800;
   color: var(--deep-green);
   line-height: 1.1;
@@ -150,7 +159,7 @@ body {
 }
 
 .status-bar.is-loading {
-  background: #f5f0f8;
+  background: #F0F0F0;
   color: var(--muted);
 }
 
@@ -160,8 +169,8 @@ body {
 }
 
 .status-bar.is-error {
-  background: #fdeeee;
-  color: var(--danger);
+  background: #E8E8E8;
+  color: var(--gray-700);
 }
 
 .status-dot {
@@ -244,17 +253,17 @@ body {
 }
 
 .lesson-panel.unopened {
-  background: linear-gradient(180deg, #FFF8E8, var(--soft-yellow));
-  border: 1px solid #F0E2B8;
+  background: linear-gradient(180deg, #FAFAF7, var(--soft-yellow));
+  border: 1px solid var(--beige-dark);
 }
 
 .lesson-panel.remaining {
-  background: linear-gradient(180deg, #F2FAF6, var(--mint));
-  border: 1px solid #C8E3D8;
+  background: linear-gradient(180deg, #FAFAF7, var(--mint));
+  border: 1px solid var(--gray-300);
 }
 
 .panel-label {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--deep-green);
   margin-bottom: 14px;
@@ -267,19 +276,19 @@ body {
   gap: 8px;
   width: 100%;
   margin-bottom: 10px;
-  font-size: 18px;
+  font-size: 22px;
   color: var(--text);
 }
 
 .ticket-row strong {
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 800;
   color: var(--deep-green);
   line-height: 1;
 }
 
 .big-number {
-  font-size: 52px;
+  font-size: 58px;
   font-weight: 800;
   color: var(--deep-green);
   line-height: 1.1;
@@ -287,7 +296,7 @@ body {
 }
 
 .expire {
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--muted);
   line-height: 1.4;
@@ -349,10 +358,10 @@ body {
   font-size: var(--font-large);
   font-weight: 800;
   line-height: 1.45;
-  background: linear-gradient(90deg, #E9F5EF, #F7FBF8);
-  border: 2px solid var(--sage);
+  background: linear-gradient(90deg, #EDE8E0, #F5F0E8);
+  border: 2px solid var(--gray-300);
   border-radius: 24px;
-  box-shadow: 0 4px 14px rgba(80, 120, 105, 0.12);
+  box-shadow: 0 4px 14px rgba(26, 26, 26, 0.08);
 }
 
 .schedule-hint-line {
@@ -391,12 +400,12 @@ body {
   padding: 8px 6px;
   border: 3px solid var(--deep-green);
   border-radius: 18px;
-  background: linear-gradient(180deg, #F7FBF8, var(--mint));
+  background: linear-gradient(180deg, #FAFAF7, var(--mint));
   color: var(--deep-green);
   font: inherit;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(80, 120, 105, 0.18);
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.1);
 }
 
 .month-nav-btn:active {
@@ -423,7 +432,7 @@ body {
   border: 2px solid var(--line);
   border-radius: 18px;
   background: #fff;
-  color: #8ab8a6;
+  color: var(--gray-500);
   font-size: 32px;
   line-height: 1;
   cursor: pointer;
@@ -454,11 +463,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--deep-green);
-  background: linear-gradient(90deg, #F8DDE2, #DCEFE7, #DDEFF8);
-  border: 1px solid #fff;
+  background: linear-gradient(90deg, #EBEBEB, #E5E5E5, #E8E8E8);
+  border: 1px solid var(--white);
 }
 
 .calendar-weekdays span:first-child {
@@ -494,13 +503,13 @@ body {
 }
 
 .calendar-cell.is-today {
-  box-shadow: inset 0 0 0 2px var(--sage);
-  background: #F7FBF8;
+  box-shadow: inset 0 0 0 2px var(--black);
+  background: var(--beige);
 }
 
 .calendar-cell.is-monday:not(.has-courses):not(.is-closure-day) {
   min-height: 80px;
-  background: #FAFCFB;
+  background: #FAFAF7;
 }
 
 .calendar-cell.is-monday .date {
@@ -510,10 +519,10 @@ body {
 
 .cal-day-num,
 .date {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1;
-  color: #344040;
+  color: var(--text);
   text-align: center;
 }
 
@@ -540,21 +549,21 @@ body {
 .cal-course-line {
   display: block;
   width: 100%;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 800;
   text-align: center;
 }
 
-.cal-course.yin { background: var(--mint); color: var(--deep-green); }
-.cal-course.pilates { background: var(--soft-yellow); color: #6B5B1F; }
-.cal-course.step { background: var(--soft-blue); color: #1F6B9A; }
-.cal-course.chair { background: #DDEFE2; color: #2A735E; }
-.cal-course.flow { background: var(--soft-lavender); color: #5B549A; }
-.cal-course.hatha { background: #E3F1E9; color: #1F6B5F; }
+.cal-course.yin { background: var(--mint); color: var(--text); }
+.cal-course.pilates { background: var(--soft-yellow); color: var(--gray-700); }
+.cal-course.step { background: var(--soft-blue); color: var(--gray-700); }
+.cal-course.chair { background: var(--beige-dark); color: var(--text); }
+.cal-course.flow { background: var(--soft-lavender); color: var(--text); }
+.cal-course.hatha { background: var(--gray-200); color: var(--text); }
 
 .cal-course.booked {
-  background: #94CDB8;
-  color: #fff;
+  background: var(--black);
+  color: var(--white);
 }
 
 .cal-course.is-full {
@@ -586,7 +595,7 @@ body {
 .cal-closure-line {
   display: block;
   width: 100%;
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 800;
   line-height: 1.35;
   text-align: center;
@@ -663,9 +672,9 @@ body {
   margin-top: 20px;
   padding: 16px;
   border-radius: 18px;
-  background: #fff8ee;
-  border: 1px solid #f5e4c8;
-  color: var(--warn);
+  background: var(--beige);
+  border: 1px solid var(--beige-dark);
+  color: var(--gray-700);
   font-size: var(--font-small);
   line-height: 1.7;
 }
@@ -678,7 +687,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(47, 58, 58, 0.45);
+  background: rgba(26, 26, 26, 0.45);
 }
 
 .confirm-overlay.is-hidden,
@@ -691,13 +700,13 @@ body {
   padding: 32px 24px 24px;
   border-radius: 28px;
   background: var(--card);
-  box-shadow: 0 16px 40px rgba(47, 58, 58, 0.2);
+  box-shadow: 0 16px 40px rgba(26, 26, 26, 0.16);
   text-align: center;
 }
 
 .confirm-message {
   margin: 0 0 28px;
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 800;
   line-height: 1.45;
   color: var(--text);
@@ -728,11 +737,11 @@ body {
 
 .confirm-btn-ok {
   min-height: 80px;
-  background: linear-gradient(180deg, #2A8577, var(--deep-green));
-  color: #fff;
-  font-size: 34px;
+  background: var(--black);
+  color: var(--white);
+  font-size: 36px;
   letter-spacing: 0.12em;
-  box-shadow: 0 8px 20px rgba(31, 107, 95, 0.35);
+  box-shadow: 0 8px 20px rgba(26, 26, 26, 0.2);
 }
 
 .confirm-btn-ok:active {
@@ -773,26 +782,26 @@ body {
   }
 
   .panel-label {
-    font-size: 17px;
+    font-size: 20px;
     margin-bottom: 10px;
   }
 
   .ticket-row {
-    font-size: 15px;
+    font-size: 18px;
     gap: 4px;
     margin-bottom: 8px;
   }
 
   .ticket-row strong {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .big-number {
-    font-size: 40px;
+    font-size: 46px;
   }
 
   .expire {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .user-box {
@@ -801,35 +810,35 @@ body {
   }
 
   .user-box .hello {
-    font-size: 22px;
+    font-size: 26px;
   }
 
   .cal-course,
   .class-box {
-    min-height: 76px;
+    min-height: 82px;
     width: 92%;
   }
 
   .cal-course-line {
-    font-size: 12px;
+    font-size: 16px;
   }
 
   .cal-closure-line {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .date,
   .cal-day-num {
-    font-size: 18px;
+    font-size: 22px;
   }
 
   .confirm-btn-ok {
     min-height: 76px;
-    font-size: 32px;
+    font-size: 34px;
   }
 
   .confirm-btn-cancel {
-    min-height: 52px;
-    font-size: 20px;
+    min-height: 56px;
+    font-size: 22px;
   }
 }
