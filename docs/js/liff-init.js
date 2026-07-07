@@ -5,7 +5,8 @@
 (function () {
   "use strict";
 
-  const LIFF_SDK_URL = "https://static.line-scdn.net/liff/edge/2/sdk.js";
+  var LIFF_SDK_URL = "https://static.line-scdn.net/liff/edge/2/sdk.js";
+  var LOGIN_PENDING_KEY = "gosu-liff-login-pending";
 
   /** @type {{ userId: string, displayName: string, pictureUrl: string } | null} */
   window.gosuUser = null;
@@ -43,6 +44,30 @@
     return liffId;
   }
 
+  function getStableRedirectUri() {
+    return window.location.origin + window.location.pathname;
+  }
+
+  function clearLoginPending() {
+    try {
+      sessionStorage.removeItem(LOGIN_PENDING_KEY);
+    } catch (ignore) {}
+  }
+
+  function markLoginPending() {
+    try {
+      sessionStorage.setItem(LOGIN_PENDING_KEY, "1");
+    } catch (ignore) {}
+  }
+
+  function hasLoginPending() {
+    try {
+      return sessionStorage.getItem(LOGIN_PENDING_KEY) === "1";
+    } catch (ignore) {
+      return false;
+    }
+  }
+
   async function initLiff() {
     await loadScript(LIFF_SDK_URL);
 
@@ -54,9 +79,17 @@
     await liff.init({ liffId: liffId });
 
     if (!liff.isLoggedIn()) {
-      liff.login({ redirectUri: window.location.href });
+      if (hasLoginPending()) {
+        clearLoginPending();
+        throw new Error("LINE 登入未完成，請關閉頁面後重新開啟");
+      }
+
+      markLoginPending();
+      liff.login({ redirectUri: getStableRedirectUri() });
       return;
     }
+
+    clearLoginPending();
 
     var profile = await liff.getProfile();
 

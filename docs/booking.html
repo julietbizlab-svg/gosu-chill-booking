@@ -34,25 +34,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=202607081548">
+  <link rel="stylesheet" href="css/styles.css?v=202607081700">
 </head>
 <body>
-  <script>
-    (function () {
-      var PAGE_VERSION = "202607081548";
-      var versionKey = "gosu-booking-page-version";
-
-      try {
-        if (localStorage.getItem(versionKey) !== PAGE_VERSION) {
-          localStorage.setItem(versionKey, PAGE_VERSION);
-          if (location.search.indexOf("v=" + PAGE_VERSION) === -1) {
-            location.replace(location.pathname + "?v=" + PAGE_VERSION + location.hash);
-          }
-        }
-      } catch (ignore) {}
-    })();
-  </script>
-
   <div class="page">
     <header class="brand">
       <h1 class="schedule-title">高手揪派</h1>
@@ -129,7 +113,7 @@
       目前顯示的是示範課表。第二階段接上 Cloudflare Workers + Notion 後，會自動換成真實資料。
     </div>
 
-    <p style="margin:24px 0 0;text-align:center;font-size:14px;color:#6B6B6B;">介面版本 2026.07.08c</p>
+    <p style="margin:24px 0 0;text-align:center;font-size:14px;color:#6B6B6B;">介面版本 2026.07.08e</p>
   </div>
 
   <div id="confirm-overlay" class="confirm-overlay is-hidden" hidden>
@@ -142,9 +126,9 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=202607081548"></script>
-  <script src="js/liff-init.js?v=202607081548"></script>
-  <script src="js/api.js?v=202607081548"></script>
-  <script src="js/app.js?v=202607081548"></script>
+  <script src="js/config.js?v=202607081700"></script>
+  <script src="js/liff-init.js?v=202607081700"></script>
+  <script src="js/api.js?v=202607081700"></script>
+  <script src="js/app.js?v=202607081700"></script>
 </body>
 </html>
