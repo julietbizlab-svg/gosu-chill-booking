@@ -41,9 +41,9 @@
   }
 
   function formatDateKey(year, month, day) {
-    return (
-      year + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0")
-    );
+    var monthText = month < 10 ? "0" + month : String(month);
+    var dayText = day < 10 ? "0" + day : String(day);
+    return year + "-" + monthText + "-" + dayText;
   }
 
   function getWeekdayIndex(dateKey) {
@@ -65,6 +65,12 @@
   }
 
   function setStatus(kind, message) {
+    if (dayDetailEl) {
+      dayDetailEl.hidden = false;
+    }
+    if (!statusPanel) {
+      return;
+    }
     statusPanel.hidden = false;
     statusPanel.className = "status-panel is-" + kind;
     statusPanel.textContent = message;
@@ -222,7 +228,9 @@
   }
 
   function renderCourses(courses, dateLabel) {
-    if (!courses.length) {
+    var list = courses || [];
+
+    if (!list.length) {
       courseListEl.hidden = true;
       courseListEl.innerHTML = "";
       setStatus("empty", (dateLabel || "這天") + "沒有課程");
@@ -231,14 +239,16 @@
 
     hideStatus();
     courseListEl.hidden = false;
-    courseListEl.innerHTML = courses.map(function (course) {
+    courseListEl.innerHTML = list.map(function (course) {
       var cardClass = "course-card";
-      if (course.status === "停課" || course.note.indexOf("停課") !== -1) {
+      var noteText = course.note || "";
+
+      if (course.status === "停課" || noteText.indexOf("停課") !== -1) {
         cardClass += " is-closure";
       }
 
-      var noteHtml = course.note
-        ? '<p class="course-note">' + escapeHtml(course.note) + "</p>"
+      var noteHtml = noteText
+        ? '<p class="course-note">' + escapeHtml(noteText) + "</p>"
         : "";
 
       return (
@@ -416,6 +426,10 @@
   }
 
   async function loadMonthOverview(userId) {
+    if (!window.gosuApi || typeof window.gosuApi.getTeacherMonthOverview !== "function") {
+      throw new Error("頁面版本過舊，請關閉後用新連結重新開啟");
+    }
+
     var year = visibleMonth.getFullYear();
     var month = visibleMonth.getMonth() + 1;
     var data = await window.gosuApi.getTeacherMonthOverview(userId, year, month);
@@ -464,11 +478,27 @@
         selectedDate = getTodayKey();
       }
 
-      await loadMonthOverview(window.gosuUser.userId);
-
-      monthSummaryEl.hidden = false;
-      calendarSectionEl.hidden = false;
       dayDetailEl.hidden = false;
+
+      try {
+        await loadMonthOverview(window.gosuUser.userId);
+        monthSummaryEl.hidden = false;
+        calendarSectionEl.hidden = false;
+      } catch (monthError) {
+        console.error("[teacher-month]", monthError);
+        latestMonthOverview = null;
+        updateMonthLabel();
+        renderMonthSummary({
+          classCount: 0,
+          completedClassCount: 0,
+          bookedClassCount: 0,
+          totalBookings: 0
+        });
+        renderCalendar([]);
+        monthSummaryEl.hidden = false;
+        calendarSectionEl.hidden = false;
+        setStatus("error", (monthError.message || "月曆讀取失敗") + "，仍顯示當日名單");
+      }
 
       await loadDayDetail(window.gosuUser.userId, selectedDate);
     } catch (error) {
@@ -491,8 +521,14 @@
     }
   }
 
+  function bindClick(el, handler) {
+    if (el) {
+      el.addEventListener("click", handler);
+    }
+  }
+
   function bindEvents() {
-    btnRefresh.addEventListener("click", function () {
+    bindClick(btnRefresh, function () {
       if (!window.gosuUser || !window.gosuUser.userId) {
         return;
       }
@@ -506,7 +542,7 @@
       });
     });
 
-    btnToday.addEventListener("click", function () {
+    bindClick(btnToday, function () {
       if (!window.gosuUser || !window.gosuUser.userId) {
         return;
       }
@@ -525,11 +561,11 @@
       });
     });
 
-    btnCopy.addEventListener("click", function () {
+    bindClick(btnCopy, function () {
       copyScheduleText();
     });
 
-    btnPrevMonth.addEventListener("click", function () {
+    bindClick(btnPrevMonth, function () {
       if (!window.gosuUser || !window.gosuUser.userId) {
         return;
       }
@@ -541,7 +577,7 @@
       });
     });
 
-    btnNextMonth.addEventListener("click", function () {
+    bindClick(btnNextMonth, function () {
       if (!window.gosuUser || !window.gosuUser.userId) {
         return;
       }
@@ -553,18 +589,20 @@
       });
     });
 
-    calendarGridEl.addEventListener("click", function (event) {
-      var button = event.target.closest("button[data-date]");
-      if (!button || !window.gosuUser || !window.gosuUser.userId) {
-        return;
-      }
+    if (calendarGridEl) {
+      calendarGridEl.addEventListener("click", function (event) {
+        var button = event.target.closest("button[data-date]");
+        if (!button || !window.gosuUser || !window.gosuUser.userId) {
+          return;
+        }
 
-      var dateIso = button.getAttribute("data-date");
-      loadDayDetail(window.gosuUser.userId, dateIso).catch(function (error) {
-        console.error("[teacher-day]", error);
-        setStatus("error", error.message || "讀取失敗，請稍後再試");
+        var dateIso = button.getAttribute("data-date");
+        loadDayDetail(window.gosuUser.userId, dateIso).catch(function (error) {
+          console.error("[teacher-day]", error);
+          setStatus("error", error.message || "讀取失敗，請稍後再試");
+        });
       });
-    });
+    }
   }
 
   try {
@@ -572,6 +610,9 @@
     boot();
   } catch (error) {
     console.error("[teacher-init]", error);
+    if (dayDetailEl) {
+      dayDetailEl.hidden = false;
+    }
     setStatus("error", error.message || "頁面初始化失敗");
   }
 })();
