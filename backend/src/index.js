@@ -8,15 +8,24 @@ import {
   getActiveBookingsByUser,
   bookCourse,
   cancelBooking,
-  getTeacherScheduleForDate
+  getTeacherScheduleForDate,
+  getTeacherAccessStatus,
+  requestTeacherAccess,
+  getPendingTeacherRequests,
+  approveTeacherRequest
 } from "./notion.js";
 import { isTrialMember } from "./member-rules.js";
 import {
   isTeacherUser,
+  isAdminUser,
   resolveTeacherDateParam,
   getTaipeiWeekdayChar,
   formatDateZhFromIso
 } from "./teacher-auth.js";
+import {
+  notifyAdminsTeacherRequest,
+  notifyTeacherApproved
+} from "./teacher-notify.js";
 
 export default {
   async fetch(request, env) {
@@ -141,7 +150,7 @@ export default {
           return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
         }
 
-        if (!isTeacherUser(env, teacherUserId)) {
+        if (!(await isTeacherUser(env, teacherUserId))) {
           return jsonResponse({ ok: false, message: "無權限查看" }, corsHeaders, 403);
         }
 
@@ -154,6 +163,86 @@ export default {
           dateLabel: formatDateZhFromIso(scheduleDate),
           weekday: getTaipeiWeekdayChar(scheduleDate),
           courses: teacherCourses
+        }, corsHeaders);
+      }
+
+      if (url.pathname === "/api/teacher/status" && request.method === "GET") {
+        ensureNotionEnv(env);
+        var statusUserId = url.searchParams.get("userId");
+
+        if (!statusUserId) {
+          return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
+        }
+
+        var accessStatus = await getTeacherAccessStatus(env, statusUserId);
+
+        return jsonResponse({
+          ok: true,
+          teacherRole: accessStatus.teacherRole,
+          canAccess: accessStatus.canAccess
+        }, corsHeaders);
+      }
+
+      if (url.pathname === "/api/teacher/request" && request.method === "POST") {
+        ensureNotionEnv(env);
+        var requestBody = await readJson(request);
+        var requestUserId = requestBody.userId;
+        var requestDisplayName = requestBody.displayName || "";
+
+        if (!requestUserId) {
+          return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
+        }
+
+        var requestResult = await requestTeacherAccess(env, requestUserId, requestDisplayName);
+
+        if (requestResult.status === "submitted" && requestResult.member) {
+          await notifyAdminsTeacherRequest(env, requestResult.member);
+        }
+
+        return jsonResponse(requestResult, corsHeaders);
+      }
+
+      if (url.pathname === "/api/admin/teacher-requests" && request.method === "GET") {
+        ensureNotionEnv(env);
+        var adminUserId = url.searchParams.get("userId");
+
+        if (!adminUserId) {
+          return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
+        }
+
+        if (!isAdminUser(env, adminUserId)) {
+          return jsonResponse({ ok: false, message: "無管理權限" }, corsHeaders, 403);
+        }
+
+        var pendingRequests = await getPendingTeacherRequests(env);
+
+        return jsonResponse({
+          ok: true,
+          requests: pendingRequests
+        }, corsHeaders);
+      }
+
+      if (url.pathname === "/api/admin/teacher-approve" && request.method === "POST") {
+        ensureNotionEnv(env);
+        var approveBody = await readJson(request);
+        var approveAdminId = approveBody.adminUserId;
+        var approveMemberId = approveBody.memberId;
+
+        if (!approveAdminId || !approveMemberId) {
+          return jsonResponse({ ok: false, message: "缺少 adminUserId 或 memberId" }, corsHeaders, 400);
+        }
+
+        if (!isAdminUser(env, approveAdminId)) {
+          return jsonResponse({ ok: false, message: "無管理權限" }, corsHeaders, 403);
+        }
+
+        var approveResult = await approveTeacherRequest(env, approveMemberId);
+        await notifyTeacherApproved(env, approveResult.member);
+
+        return jsonResponse({
+          ok: true,
+          message: "已核准 " + (approveResult.member.displayName || "老師"),
+          member: approveResult.member
         }, corsHeaders);
       }
 

@@ -2,22 +2,44 @@
  * 老師 LIFF 頁面權限與台北時區日期
  */
 
+import { isTeacherApprovedInNotion } from "./notion.js";
+
 var WEEKDAY_ZH = ["日", "一", "二", "三", "四", "五", "六"];
 
-export function parseTeacherUserIds(raw) {
+export function parseIdList(raw) {
   return String(raw || "")
     .split(/[,;\s]+/)
     .map(function (part) { return part.trim(); })
     .filter(Boolean);
 }
 
-export function isTeacherUser(env, userId) {
+export function parseTeacherUserIds(raw) {
+  return parseIdList(raw);
+}
+
+export function parseAdminUserIds(raw) {
+  return parseIdList(raw);
+}
+
+export function isAdminUser(env, userId) {
   if (!userId) {
     return false;
   }
 
-  var allowed = parseTeacherUserIds(env.TEACHER_LINE_USER_IDS);
+  var allowed = parseAdminUserIds(env.ADMIN_LINE_USER_IDS);
   return allowed.indexOf(userId) !== -1;
+}
+
+export async function isTeacherUser(env, userId) {
+  if (!userId) {
+    return false;
+  }
+
+  if (parseTeacherUserIds(env.TEACHER_LINE_USER_IDS).indexOf(userId) !== -1) {
+    return true;
+  }
+
+  return isTeacherApprovedInNotion(env, userId);
 }
 
 export function getTaipeiDateString(offsetDays) {

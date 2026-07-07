@@ -195,22 +195,77 @@
     courseListEl.innerHTML = "";
     document.querySelector(".toolbar").hidden = true;
     document.querySelector(".date-banner").hidden = true;
+    forbiddenPanel.hidden = false;
+    forbiddenPanel.innerHTML =
+      '<div class="line-id-card">' +
+        '<p class="forbidden-title">尚未開通老師查看權限</p>' +
+        '<p class="forbidden-text" id="access-message">讀取申請狀態中…</p>' +
+        '<p class="line-id-name">' + escapeHtml(user.displayName || "LINE 使用者") + "</p>" +
+        '<div class="line-id-actions" id="access-actions"></div>' +
+      "</div>";
 
-    if (!window.gosuLineId) {
-      setStatus("forbidden", "無權限查看");
-      return;
-    }
+    loadAccessPanel(user);
+  }
 
-    window.gosuLineId.bindIdCard(forbiddenPanel, user, copyToast, {
-      forbiddenTitle: "尚未開通老師查看權限",
-      forbiddenText: "請複製下方 LINE 編號傳給工作室，開通後關閉此頁再重新開啟。",
-      title: "您的 LINE 編號",
-      hint: "",
-      secondaryLabel: "查看開通步驟說明",
-      onSecondary: function () {
-        window.location.href = "my-line-id.html";
+  async function loadAccessPanel(user) {
+    var messageEl = document.getElementById("access-message");
+    var actionsEl = document.getElementById("access-actions");
+
+    try {
+      var status = await window.gosuApi.getTeacherStatus(user.userId);
+
+      if (status.teacherRole === "待審核") {
+        messageEl.textContent = "您的申請已送出，請等候工作室核准。核准後會以 LINE 通知您。";
+        actionsEl.innerHTML =
+          '<button type="button" class="line-id-btn line-id-btn-secondary" id="btn-recheck-access">重新整理狀態</button>';
+        document.getElementById("btn-recheck-access").addEventListener("click", function () {
+          loadSchedule();
+        });
+        return;
       }
-    });
+
+      messageEl.textContent = "點下方按鈕申請開通。工作室核准後，您就能查看今日預約名單。";
+      actionsEl.innerHTML =
+        '<button type="button" class="line-id-btn" id="btn-request-access">申請開通老師權限</button>';
+      document.getElementById("btn-request-access").addEventListener("click", function () {
+        submitAccessRequest(user);
+      });
+    } catch (error) {
+      console.error("[teacher-access]", error);
+      messageEl.textContent = "無法讀取申請狀態，請稍後再試。";
+      actionsEl.innerHTML =
+        '<button type="button" class="line-id-btn" id="btn-request-access">申請開通老師權限</button>';
+      document.getElementById("btn-request-access").addEventListener("click", function () {
+        submitAccessRequest(user);
+      });
+    }
+  }
+
+  async function submitAccessRequest(user) {
+    try {
+      setStatus("loading", "送出申請中…");
+      forbiddenPanel.hidden = true;
+
+      var result = await window.gosuApi.requestTeacherAccess(
+        user.userId,
+        user.displayName
+      );
+
+      hideStatus();
+
+      if (result.status === "approved") {
+        loadSchedule();
+        return;
+      }
+
+      showForbiddenPanel(user);
+      showCopyToast(result.message || "已送出申請");
+    } catch (error) {
+      console.error("[teacher-request]", error);
+      hideStatus();
+      showForbiddenPanel(user);
+      showCopyToast(error.message || "申請失敗，請稍後再試");
+    }
   }
 
   async function loadSchedule() {

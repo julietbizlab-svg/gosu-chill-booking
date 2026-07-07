@@ -23,3 +23,7 @@ LINE_CHANNEL_ACCESS_TOKEN=
 # 老師 LINE userId 白名單（逗號或空白分隔，僅這些帳號可開啟老師今日預約頁）
 # 例：U1234567890abcdef,U0987654321fedcba
 TEACHER_LINE_USER_IDS=
+
+# 工作室管理員 LINE userId（收到老師申請通知、可進入核准頁）
+# 例：U你的LINE編號
+ADMIN_LINE_USER_IDS=

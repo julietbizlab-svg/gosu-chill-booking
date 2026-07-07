@@ -94,6 +94,34 @@
       return apiFetch(query);
     },
 
+    getTeacherStatus: function (userId) {
+      return apiFetch("/api/teacher/status?userId=" + encodeURIComponent(userId));
+    },
+
+    requestTeacherAccess: function (userId, displayName) {
+      return apiFetch("/api/teacher/request", {
+        method: "POST",
+        body: JSON.stringify({
+          userId: userId,
+          displayName: displayName || ""
+        })
+      });
+    },
+
+    getAdminTeacherRequests: function (adminUserId) {
+      return apiFetch("/api/admin/teacher-requests?userId=" + encodeURIComponent(adminUserId));
+    },
+
+    approveTeacherRequest: function (adminUserId, memberId) {
+      return apiFetch("/api/admin/teacher-approve", {
+        method: "POST",
+        body: JSON.stringify({
+          adminUserId: adminUserId,
+          memberId: memberId
+        })
+      });
+    },
+
     isConfigured: function () {
       return Boolean(getApiBaseUrl());
     }

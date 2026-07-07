@@ -231,6 +231,7 @@ function parseMemberPage(page) {
     trialGiftRaw: trialGiftRaw,
     systemRecordedCredits: hasRecorded ? getNumber(props, "系統記錄堂數") : null,
     lowCreditNotified: getCheckbox(props, "低堂數已提醒"),
+    teacherRole: getSelectOrStatus(props, "老師權限") || "無",
     status: getSelectOrStatus(props, "狀態") === "有效" ? "active" : "pending"
   };
 
@@ -257,6 +258,17 @@ async function ensureMemberSchema(env) {
   }
   if (!props["低堂數已提醒"]) {
     patch["低堂數已提醒"] = { checkbox: {} };
+  }
+  if (!props["老師權限"]) {
+    patch["老師權限"] = {
+      select: {
+        options: [
+          { name: "無", color: "default" },
+          { name: "待審核", color: "yellow" },
+          { name: "已核准", color: "green" }
+        ]
+      }
+    };
   }
 
   if (Object.keys(patch).length) {
@@ -815,6 +827,124 @@ export async function getCoursesByDate(env, dateIso) {
         return course.date === dateIso;
       })
   );
+}
+
+export async function isTeacherApprovedInNotion(env, userId) {
+  var member = await getMemberByUserId(env, userId);
+  return Boolean(member && member.teacherRole === "已核准");
+}
+
+export async function getTeacherAccessStatus(env, userId) {
+  await ensureMemberSchema(env);
+
+  if (parseTeacherUserIds(env.TEACHER_LINE_USER_IDS).indexOf(userId) !== -1) {
+    return {
+      teacherRole: "已核准",
+      canAccess: true,
+      source: "env"
+    };
+  }
+
+  var member = await getMemberByUserId(env, userId);
+  var teacherRole = member ? member.teacherRole : "無";
+
+  return {
+    teacherRole: teacherRole,
+    canAccess: teacherRole === "已核准",
+    source: "notion"
+  };
+}
+
+function parseTeacherUserIds(raw) {
+  return String(raw || "")
+    .split(/[,;\s]+/)
+    .map(function (part) { return part.trim(); })
+    .filter(Boolean);
+}
+
+export async function requestTeacherAccess(env, userId, displayName) {
+  await ensureMemberSchema(env);
+
+  if (parseTeacherUserIds(env.TEACHER_LINE_USER_IDS).indexOf(userId) !== -1) {
+    return {
+      ok: true,
+      status: "approved",
+      message: "您已具備老師查看權限"
+    };
+  }
+
+  var result = await getOrCreateMember(env, userId, displayName);
+  var member = result.member;
+
+  if (member.teacherRole === "已核准") {
+    return {
+      ok: true,
+      status: "approved",
+      message: "您已具備老師查看權限"
+    };
+  }
+
+  if (member.teacherRole === "待審核") {
+    return {
+      ok: true,
+      status: "pending",
+      message: "申請審核中，請等候工作室核准"
+    };
+  }
+
+  await updatePage(env.NOTION_TOKEN, member.id, {
+    "老師權限": { select: { name: "待審核" } }
+  });
+
+  return {
+    ok: true,
+    status: "submitted",
+    message: "已送出申請，工作室核准後會以 LINE 通知您",
+    member: {
+      id: member.id,
+      userId: member.userId,
+      displayName: member.displayName
+    }
+  };
+}
+
+export async function getPendingTeacherRequests(env) {
+  await ensureMemberSchema(env);
+
+  var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_MEMBERS, {
+    filter: buildStatusFilter("老師權限", "待審核"),
+    sorts: [{ timestamp: "last_edited_time", direction: "descending" }]
+  });
+
+  return pages.map(function (page) {
+    var member = parseMemberPage(page);
+    return {
+      memberId: member.id,
+      userId: member.userId,
+      displayName: member.displayName,
+      teacherRole: member.teacherRole
+    };
+  });
+}
+
+export async function approveTeacherRequest(env, memberId) {
+  await ensureMemberSchema(env);
+  await updatePage(env.NOTION_TOKEN, memberId, {
+    "老師權限": { select: { name: "已核准" } }
+  });
+
+  var page = await notionFetch("/pages/" + memberId, env.NOTION_TOKEN, { method: "GET" });
+  var member = parseMemberPage(page);
+
+  return {
+    ok: true,
+    member: {
+      id: member.id,
+      userId: member.userId,
+      displayName: member.displayName,
+      teacherRole: "已核准"
+    }
+  };
 }
 
 export async function getTeacherScheduleForDate(env, dateIso) {
