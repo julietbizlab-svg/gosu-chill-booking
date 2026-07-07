@@ -6,7 +6,7 @@ function getAdminApproveUrl() {
 }
 
 function getTeacherPageUrl() {
-  return "https://liff.line.me/2010530394-zbVNU8Pq/teacher.html";
+  return "https://liff.line.me/2010530394-zbVNU8Pq/teacher-schedule.html";
 }
 
 export async function notifyAdminsTeacherRequest(env, member) {
