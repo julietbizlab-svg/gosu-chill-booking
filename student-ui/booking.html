@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="theme-color" content="#1A1A1A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="高手揪派預約">
+  <title>高手揪派 · 課程預約</title>
+  <style>
+    html { font-size: 26px !important; }
+    body {
+      background: #F5F0E8 !important;
+      color: #1A1A1A !important;
+    }
+    .schedule-title,
+    .section-title,
+    .month-label,
+    .big-number,
+    .btn-primary,
+    .confirm-btn-ok {
+      color: #1A1A1A !important;
+    }
+    .btn-primary,
+    .confirm-btn-ok,
+    .cal-course.booked {
+      background: #1A1A1A !important;
+      color: #FFFFFF !important;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=202607081548">
+</head>
+<body>
+  <script>
+    (function () {
+      var PAGE_VERSION = "202607081548";
+      var versionKey = "gosu-booking-page-version";
+
+      try {
+        if (localStorage.getItem(versionKey) !== PAGE_VERSION) {
+          localStorage.setItem(versionKey, PAGE_VERSION);
+          if (location.search.indexOf("v=" + PAGE_VERSION) === -1) {
+            location.replace(location.pathname + "?v=" + PAGE_VERSION + location.hash);
+          }
+        }
+      } catch (ignore) {}
+    })();
+  </script>
+
+  <div class="page">
+    <header class="brand">
+      <h1 class="schedule-title">高手揪派</h1>
+      <p class="schedule-subtitle brand-tag">課程預約</p>
+    </header>
+
+    <div id="status-bar" class="status-bar is-hidden" role="status" aria-live="polite" hidden>
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="status-text"></span>
+    </div>
+
+    <section id="member-section" class="lesson-card" hidden aria-label="我的堂數">
+      <h2 class="section-title">我的堂數</h2>
+
+      <div class="user-box">
+        <img id="member-avatar" class="avatar" src="" alt="會員照片" width="72" height="72" hidden>
+        <div id="member-name" class="hello">學員您好</div>
+      </div>
+
+      <div class="lesson-grid">
+        <div class="lesson-panel unopened">
+          <div class="panel-label">未開卡</div>
+          <div class="ticket-row">
+            <span>10堂課</span>
+            <strong id="card10">0</strong>
+            <span>張</span>
+          </div>
+          <div class="ticket-row">
+            <span>24堂課</span>
+            <strong id="card24">0</strong>
+            <span>張</span>
+          </div>
+        </div>
+
+        <div class="lesson-panel remaining">
+          <div class="panel-label">剩餘堂數</div>
+          <div class="big-number" id="remainingLessons">—</div>
+          <div class="expire" id="credits-expiry">到期日：—</div>
+        </div>
+      </div>
+
+      <p id="member-meta" class="member-meta" hidden></p>
+    </section>
+
+    <section id="schedule-section" class="card schedule-wrap" hidden aria-label="課表">
+      <p class="schedule-hint">
+        <span class="schedule-hint-line">點格子內課程</span>
+        <span class="schedule-hint-line">即可預約或取消</span>
+      </p>
+      <div class="month-header">
+        <button id="prev-month" class="month-nav-btn" type="button" aria-label="上一個月">
+          <span class="month-nav-arrow" aria-hidden="true">‹</span>
+          <span class="month-nav-hint">上一個月</span>
+        </button>
+        <div id="month-label" class="month-label">—</div>
+        <button id="next-month" class="month-nav-btn" type="button" aria-label="下一個月">
+          <span class="month-nav-arrow" aria-hidden="true">›</span>
+          <span class="month-nav-hint">下一個月</span>
+        </button>
+      </div>
+
+      <div id="calendar-panel" class="calendar-panel">
+        <div class="calendar-weekdays" aria-hidden="true">
+          <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span>
+        </div>
+        <div id="calendar-grid" class="calendar-grid">
+          <div class="empty-msg">讀取中…</div>
+        </div>
+        <p id="calendar-note" class="calendar-note" hidden></p>
+      </div>
+    </section>
+
+    <div id="dev-hint" class="hint-box" hidden>
+      目前顯示的是示範課表。第二階段接上 Cloudflare Workers + Notion 後，會自動換成真實資料。
+    </div>
+
+    <p style="margin:24px 0 0;text-align:center;font-size:14px;color:#6B6B6B;">介面版本 2026.07.08c</p>
+  </div>
+
+  <div id="confirm-overlay" class="confirm-overlay is-hidden" hidden>
+    <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-message">
+      <p id="confirm-message" class="confirm-message"></p>
+      <div class="confirm-actions">
+        <button id="confirm-ok" class="confirm-btn confirm-btn-ok" type="button">確定</button>
+        <button id="confirm-cancel" class="confirm-btn confirm-btn-cancel" type="button">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=202607081548"></script>
+  <script src="js/liff-init.js?v=202607081548"></script>
+  <script src="js/api.js?v=202607081548"></script>
+  <script src="js/app.js?v=202607081548"></script>
+</body>
+</html>
