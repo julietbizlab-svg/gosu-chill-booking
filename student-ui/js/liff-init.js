@@ -1,17 +1,16 @@
 /**
  * LINE LIFF 登入模組
- * 學員從 LINE 開啟網頁時，自動取得 userId，免輸入密碼
  */
 (function () {
   "use strict";
 
   var LIFF_SDK_URL = "https://static.line-scdn.net/liff/edge/2/sdk.js";
-  var LOGIN_PENDING_KEY = "gosu-liff-login-pending";
+  var LOGIN_COOLDOWN_KEY = "gosu-liff-login-at";
+  var LOGIN_COOLDOWN_MS = 90000;
+  var loginRequested = false;
 
-  /** @type {{ userId: string, displayName: string, pictureUrl: string } | null} */
   window.gosuUser = null;
 
-  /** @type {Promise<void>} */
   window.gosuLiffReady = new Promise(function (resolve, reject) {
     window.__resolveGosuLiff = resolve;
     window.__rejectGosuLiff = reject;
@@ -48,24 +47,53 @@
     return window.location.origin + window.location.pathname;
   }
 
-  function clearLoginPending() {
-    try {
-      sessionStorage.removeItem(LOGIN_PENDING_KEY);
-    } catch (ignore) {}
+  function isDefaultLiffPage() {
+    var path = window.location.pathname;
+    return /\/gosu-chill-booking\/?$/.test(path) || /\/index\.html$/.test(path);
   }
 
-  function markLoginPending() {
+  function getLastLoginAttempt() {
     try {
-      sessionStorage.setItem(LOGIN_PENDING_KEY, "1");
-    } catch (ignore) {}
-  }
-
-  function hasLoginPending() {
-    try {
-      return sessionStorage.getItem(LOGIN_PENDING_KEY) === "1";
+      return parseInt(localStorage.getItem(LOGIN_COOLDOWN_KEY) || "0", 10);
     } catch (ignore) {
-      return false;
+      return 0;
     }
+  }
+
+  function recordLoginAttempt() {
+    try {
+      localStorage.setItem(LOGIN_COOLDOWN_KEY, String(Date.now()));
+    } catch (ignore) {}
+  }
+
+  function clearLoginAttempt() {
+    try {
+      localStorage.removeItem(LOGIN_COOLDOWN_KEY);
+    } catch (ignore) {}
+  }
+
+  function shouldBlockLoginRetry() {
+    return Date.now() - getLastLoginAttempt() < LOGIN_COOLDOWN_MS;
+  }
+
+  function requestLogin() {
+    if (loginRequested) {
+      return;
+    }
+
+    if (shouldBlockLoginRetry()) {
+      throw new Error("LINE 登入重試過於頻繁，請完全關閉 LINE 後再開");
+    }
+
+    loginRequested = true;
+    recordLoginAttempt();
+
+    if (isDefaultLiffPage()) {
+      liff.login();
+      return;
+    }
+
+    liff.login({ redirectUri: getStableRedirectUri() });
   }
 
   async function initLiff() {
@@ -75,21 +103,17 @@
       throw new Error("LIFF SDK 未就緒");
     }
 
-    var liffId = getLiffId();
-    await liff.init({ liffId: liffId });
+    await liff.init({
+      liffId: getLiffId(),
+      withLoginOnExternalBrowser: true
+    });
 
     if (!liff.isLoggedIn()) {
-      if (hasLoginPending()) {
-        clearLoginPending();
-        throw new Error("LINE 登入未完成，請關閉頁面後重新開啟");
-      }
-
-      markLoginPending();
-      liff.login({ redirectUri: getStableRedirectUri() });
+      requestLogin();
       return;
     }
 
-    clearLoginPending();
+    clearLoginAttempt();
 
     var profile = await liff.getProfile();
 
