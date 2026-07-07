@@ -463,6 +463,13 @@ body {
   opacity: 1;
 }
 
+.page-version {
+  margin: 24px 0 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+
 @media (min-width: 640px) {
   .summary-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
