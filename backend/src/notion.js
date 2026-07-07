@@ -22,6 +22,7 @@ import { maybeNotifyLowCredits } from "./line-push.js";
 
 var NOTION_VERSION = "2022-06-28";
 var memberSchemaReady = false;
+var courseDatabaseProperties = null;
 
 export async function notionFetch(path, token, options) {
   var response = await fetch("https://api.notion.com/v1" + path, Object.assign({
@@ -104,11 +105,46 @@ function buildTextOrTitleFilter(propertyName, value) {
 
 function buildStatusFilter(propertyName, value) {
   return {
-    or: [
-      { property: propertyName, select: { equals: value } },
-      { property: propertyName, status: { equals: value } }
-    ]
+    property: propertyName,
+    select: { equals: value }
   };
+}
+
+async function getCourseDatabaseProperties(env) {
+  if (courseDatabaseProperties) {
+    return courseDatabaseProperties;
+  }
+
+  var db = await notionFetch(
+    "/databases/" + env.NOTION_DATABASE_COURSES,
+    env.NOTION_TOKEN,
+    { method: "GET" }
+  );
+  courseDatabaseProperties = db.properties || {};
+  return courseDatabaseProperties;
+}
+
+function pickDatePropertyName(properties, candidates) {
+  for (var i = 0; i < candidates.length; i++) {
+    var name = candidates[i];
+    var prop = properties[name];
+    if (prop && prop.type === "date") {
+      return name;
+    }
+  }
+
+  return null;
+}
+
+async function getCourseDatePropertyName(env) {
+  var properties = await getCourseDatabaseProperties(env);
+  var name = pickDatePropertyName(properties, ["上課日期", "日期"]);
+
+  if (!name) {
+    throw new Error("課程資料庫缺少日期欄位（請新增「日期」或「上課日期」）");
+  }
+
+  return name;
 }
 
 function getNumber(props, name) {
@@ -450,16 +486,17 @@ export async function getCoursesByMonth(env, year, month) {
   var start = year + "-" + monthStr + "-01";
   var lastDay = new Date(year, month, 0).getDate();
   var end = year + "-" + monthStr + "-" + String(lastDay).padStart(2, "0");
+  var dateProperty = await getCourseDatePropertyName(env);
 
   var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_COURSES, {
     filter: {
       and: [
-        { property: "日期", date: { on_or_after: start } },
-        { property: "日期", date: { on_or_before: end } }
+        { property: dateProperty, date: { on_or_after: start } },
+        { property: dateProperty, date: { on_or_before: end } }
       ]
     },
     sorts: [
-      { property: "日期", direction: "ascending" }
+      { property: dateProperty, direction: "ascending" }
     ]
   });
 
@@ -808,15 +845,15 @@ function sortCoursesByTime(courses) {
 }
 
 export async function getCoursesByDate(env, dateIso) {
+  var dateProperty = await getCourseDatePropertyName(env);
+
   var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_COURSES, {
     filter: {
-      or: [
-        { property: "日期", date: { equals: dateIso } },
-        { property: "上課日期", date: { equals: dateIso } }
-      ]
+      property: dateProperty,
+      date: { equals: dateIso }
     },
     sorts: [
-      { property: "日期", direction: "ascending" }
+      { property: dateProperty, direction: "ascending" }
     ]
   });
 
@@ -947,6 +984,116 @@ export async function approveTeacherRequest(env, memberId) {
   };
 }
 
+export async function getTeacherMonthOverview(env, year, month) {
+  var monthStr = String(month).padStart(2, "0");
+  var start = year + "-" + monthStr + "-01";
+  var lastDay = new Date(year, month, 0).getDate();
+  var end = year + "-" + monthStr + "-" + String(lastDay).padStart(2, "0");
+  var dateProperty = await getCourseDatePropertyName(env);
+  var todayIso = isoToday();
+
+  var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_COURSES, {
+    filter: {
+      and: [
+        { property: dateProperty, date: { on_or_after: start } },
+        { property: dateProperty, date: { on_or_before: end } }
+      ]
+    },
+    sorts: [
+      { property: dateProperty, direction: "ascending" }
+    ]
+  });
+
+  var courses = pages.map(parseCoursePage).filter(function (course) {
+    return Boolean(course.date);
+  });
+  var activeCourses = courses.filter(function (course) {
+    return !course.isClosure && course.status === "open";
+  });
+  var bookings = await getConfirmedBookingsByCourseIds(
+    env,
+    activeCourses.map(function (course) { return course.id; })
+  );
+  var bookingsByCourse = new Map();
+
+  bookings.forEach(function (booking) {
+    var count = bookingsByCourse.get(booking.courseId) || 0;
+    bookingsByCourse.set(booking.courseId, count + 1);
+  });
+
+  var daysMap = new Map();
+
+  function ensureDay(dateIso) {
+    if (!daysMap.has(dateIso)) {
+      daysMap.set(dateIso, {
+        date: dateIso,
+        classCount: 0,
+        bookedCount: 0,
+        hasBookings: false,
+        isClosure: false
+      });
+    }
+
+    return daysMap.get(dateIso);
+  }
+
+  activeCourses.forEach(function (course) {
+    var day = ensureDay(course.date);
+    var bookingCount = bookingsByCourse.get(course.id) || 0;
+
+    if (!bookingCount && course.hasEnrolled) {
+      bookingCount = course.enrolled;
+    }
+
+    day.classCount += 1;
+
+    if (bookingCount > 0) {
+      day.bookedCount += bookingCount;
+      day.hasBookings = true;
+    }
+  });
+
+  courses.filter(function (course) {
+    return course.isClosure;
+  }).forEach(function (course) {
+    var day = ensureDay(course.date);
+    day.isClosure = true;
+  });
+
+  var bookedClassCount = 0;
+  var completedClassCount = 0;
+
+  activeCourses.forEach(function (course) {
+    var bookingCount = bookingsByCourse.get(course.id) || 0;
+
+    if (!bookingCount && course.hasEnrolled) {
+      bookingCount = course.enrolled;
+    }
+
+    if (bookingCount > 0) {
+      bookedClassCount += 1;
+    }
+
+    if (course.date < todayIso) {
+      completedClassCount += 1;
+    }
+  });
+
+  return {
+    year: year,
+    month: month,
+    summary: {
+      classCount: activeCourses.length,
+      completedClassCount: completedClassCount,
+      bookedClassCount: bookedClassCount,
+      totalBookings: bookings.length
+    },
+    days: Array.from(daysMap.values()).sort(function (a, b) {
+      return a.date.localeCompare(b.date);
+    })
+  };
+}
+
 export async function getTeacherScheduleForDate(env, dateIso) {
   var courses = await getCoursesByDate(env, dateIso);
   var courseIds = courses.map(function (course) { return course.id; });
@@ -979,7 +1126,8 @@ export async function getTeacherScheduleForDate(env, dateIso) {
 
       return {
         name: name,
-        type: type
+        type: type,
+        creditsLeft: member ? member.credits : null
       };
     });
 

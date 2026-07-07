@@ -1,20 +1,36 @@
 /**
- * 高手揪派 — 老師今日預約（唯讀）
+ * 高手揪派 — 老師課表與預約（唯讀）
  */
 (function () {
   "use strict";
 
+  var monthSummaryEl = document.getElementById("month-summary");
+  var calendarSectionEl = document.getElementById("calendar-section");
+  var dayDetailEl = document.getElementById("day-detail");
+  var monthLabelEl = document.getElementById("month-label");
+  var calendarGridEl = document.getElementById("calendar-grid");
+  var statClassesEl = document.getElementById("stat-classes");
+  var statCompletedEl = document.getElementById("stat-completed");
+  var statBookedClassesEl = document.getElementById("stat-booked-classes");
+  var statBookingsEl = document.getElementById("stat-bookings");
   var viewDateEl = document.getElementById("view-date");
   var statusPanel = document.getElementById("status-panel");
   var forbiddenPanel = document.getElementById("forbidden-panel");
   var courseListEl = document.getElementById("course-list");
   var btnRefresh = document.getElementById("btn-refresh");
-  var btnToggleDay = document.getElementById("btn-toggle-day");
+  var btnToday = document.getElementById("btn-today");
   var btnCopy = document.getElementById("btn-copy");
+  var btnPrevMonth = document.getElementById("btn-prev-month");
+  var btnNextMonth = document.getElementById("btn-next-month");
   var copyToast = document.getElementById("copy-toast");
 
-  var viewingTomorrow = false;
+  var visibleMonth = new Date();
+  visibleMonth.setDate(1);
+  visibleMonth.setHours(0, 0, 0, 0);
+
+  var selectedDate = "";
   var latestSchedule = null;
+  var latestMonthOverview = null;
 
   function escapeHtml(text) {
     return String(text || "")
@@ -22,6 +38,30 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
+  }
+
+  function formatDateKey(year, month, day) {
+    return (
+      year + "-" + String(month).padStart(2, "0") + "-" + String(day).padStart(2, "0")
+    );
+  }
+
+  function getWeekdayIndex(dateKey) {
+    return new Date(dateKey + "T12:00:00").getDay();
+  }
+
+  function isWeekdayDate(dateKey) {
+    var weekday = getWeekdayIndex(dateKey);
+    return weekday !== 0 && weekday !== 6;
+  }
+
+  function getWorkdayColumn(dateKey) {
+    return getWeekdayIndex(dateKey) - 1;
+  }
+
+  function getTodayKey() {
+    var now = new Date();
+    return formatDateKey(now.getFullYear(), now.getMonth() + 1, now.getDate());
   }
 
   function setStatus(kind, message) {
@@ -35,18 +75,121 @@
     statusPanel.textContent = "";
   }
 
-  function getScheduleQuery() {
-    return viewingTomorrow ? { day: "tomorrow" } : {};
+  function updateMonthLabel() {
+    monthLabelEl.textContent = visibleMonth.toLocaleDateString("zh-TW", {
+      year: "numeric",
+      month: "long"
+    });
   }
 
-  function updateToggleButtonLabel() {
-    btnToggleDay.textContent = viewingTomorrow ? "看今天" : "看明天";
-    btnCopy.textContent = viewingTomorrow ? "複製明日名單" : "複製今日名單";
+  function renderMonthSummary(summary) {
+    if (!summary) {
+      monthSummaryEl.hidden = true;
+      return;
+    }
+
+    monthSummaryEl.hidden = false;
+    statClassesEl.textContent = String(summary.classCount || 0);
+    statCompletedEl.textContent = String(summary.completedClassCount || 0);
+    statBookedClassesEl.textContent = String(summary.bookedClassCount || 0);
+    statBookingsEl.textContent = String(summary.totalBookings || 0);
   }
 
-  function renderDateBanner(data) {
-    var weekday = data.weekday || "—";
-    viewDateEl.textContent = data.dateLabel + "（星期" + weekday + "）";
+  function buildDaysMap(days) {
+    var map = new Map();
+
+    (days || []).forEach(function (day) {
+      map.set(day.date, day);
+    });
+
+    return map;
+  }
+
+  function renderCalendar(days) {
+    var year = visibleMonth.getFullYear();
+    var monthIndex = visibleMonth.getMonth();
+    var month = monthIndex + 1;
+    var daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+    var daysMap = buildDaysMap(days);
+    var todayKey = getTodayKey();
+    var html = "";
+    var weekdayDays = [];
+    var day;
+    var pad;
+
+    for (day = 1; day <= daysInMonth; day++) {
+      var dateKey = formatDateKey(year, month, day);
+      if (isWeekdayDate(dateKey)) {
+        weekdayDays.push({ day: day, dateKey: dateKey });
+      }
+    }
+
+    if (weekdayDays.length) {
+      var leading = getWorkdayColumn(weekdayDays[0].dateKey);
+      for (pad = 0; pad < leading; pad++) {
+        html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
+      }
+    }
+
+    weekdayDays.forEach(function (item) {
+      var info = daysMap.get(item.dateKey) || {};
+      var cellClass = "calendar-cell";
+      var badge = "";
+
+      if (item.dateKey === todayKey) {
+        cellClass += " is-today";
+      }
+
+      if (item.dateKey === selectedDate) {
+        cellClass += " is-selected";
+      }
+
+      if (info.isClosure) {
+        cellClass += " is-closure-day";
+        badge = '<span class="cal-badge is-closure">停課</span>';
+      } else if (info.hasBookings) {
+        cellClass += " has-bookings";
+        badge = '<span class="cal-badge">' + escapeHtml(info.bookedCount) + "人</span>";
+      } else if (info.classCount) {
+        cellClass += " has-class";
+        badge = '<span class="cal-badge is-open">' + escapeHtml(info.classCount) + "堂</span>";
+      }
+
+      html +=
+        '<button class="' + cellClass + '" type="button" data-date="' + escapeHtml(item.dateKey) + '">' +
+          '<span class="cal-day-num">' + item.day + "</span>" +
+          badge +
+        "</button>";
+    });
+
+    if (weekdayDays.length) {
+      var trailing = 4 - getWorkdayColumn(weekdayDays[weekdayDays.length - 1].dateKey);
+      for (day = 0; day < trailing; day++) {
+        html += '<div class="calendar-cell is-padding" aria-hidden="true"></div>';
+      }
+    }
+
+    calendarGridEl.innerHTML = html;
+  }
+
+  function formatStudentCredits(student) {
+    if (student.creditsLeft === null || student.creditsLeft === undefined) {
+      return "";
+    }
+
+    return (
+      '<span class="student-credits">剩 ' +
+      escapeHtml(student.creditsLeft) +
+      " 堂</span>"
+    );
+  }
+
+  function formatStudentCreditsText(student) {
+    if (student.creditsLeft === null || student.creditsLeft === undefined) {
+      return "";
+    }
+
+    return "，剩 " + student.creditsLeft + " 堂";
   }
 
   function renderStudentList(students) {
@@ -66,7 +209,10 @@
 
         return (
           '<li class="student-item">' +
-            '<span class="student-name">' + escapeHtml(student.name) + "</span>" +
+            '<div class="student-main">' +
+              '<span class="student-name">' + escapeHtml(student.name) + "</span>" +
+              formatStudentCredits(student) +
+            "</div>" +
             '<span class="' + typeClass + '">' + escapeHtml(student.type) + "</span>" +
           "</li>"
         );
@@ -75,11 +221,11 @@
     );
   }
 
-  function renderCourses(courses) {
+  function renderCourses(courses, dateLabel) {
     if (!courses.length) {
       courseListEl.hidden = true;
       courseListEl.innerHTML = "";
-      setStatus("empty", viewingTomorrow ? "明日沒有課程" : "今日沒有課程");
+      setStatus("empty", (dateLabel || "這天") + "沒有課程");
       return;
     }
 
@@ -109,16 +255,20 @@
     }).join("");
   }
 
+  function renderDateBanner(data) {
+    var weekday = data.weekday || "—";
+    viewDateEl.textContent = data.dateLabel + "（星期" + weekday + "）";
+  }
+
   function buildCopyText(data) {
     var lines = [];
-    var title = viewingTomorrow ? "明日預約" : "今日預約";
 
-    lines.push("高手揪派｜" + title);
+    lines.push("高手揪派｜當日預約");
     lines.push(data.dateLabel + "（星期" + data.weekday + "）");
     lines.push("");
 
     if (!data.courses || !data.courses.length) {
-      lines.push("今日沒有課程");
+      lines.push("這天沒有課程");
       return lines.join("\n");
     }
 
@@ -135,7 +285,7 @@
       } else {
         lines.push("學員：");
         course.students.forEach(function (student) {
-          lines.push("- " + student.name + "（" + student.type + "）");
+          lines.push("- " + student.name + "（" + student.type + formatStudentCreditsText(student) + "）");
         });
       }
 
@@ -191,10 +341,11 @@
 
   function showForbiddenPanel(user) {
     hideStatus();
+    monthSummaryEl.hidden = true;
+    calendarSectionEl.hidden = true;
+    dayDetailEl.hidden = true;
     courseListEl.hidden = true;
     courseListEl.innerHTML = "";
-    document.querySelector(".toolbar").hidden = true;
-    document.querySelector(".date-banner").hidden = true;
     forbiddenPanel.hidden = false;
     forbiddenPanel.innerHTML =
       '<div class="line-id-card">' +
@@ -219,12 +370,12 @@
         actionsEl.innerHTML =
           '<button type="button" class="line-id-btn line-id-btn-secondary" id="btn-recheck-access">重新整理狀態</button>';
         document.getElementById("btn-recheck-access").addEventListener("click", function () {
-          loadSchedule();
+          boot();
         });
         return;
       }
 
-      messageEl.textContent = "點下方按鈕申請開通。工作室核准後，您就能查看今日預約名單。";
+      messageEl.textContent = "點下方按鈕申請開通。工作室核准後，您就能查看課表與預約名單。";
       actionsEl.innerHTML =
         '<button type="button" class="line-id-btn" id="btn-request-access">申請開通老師權限</button>';
       document.getElementById("btn-request-access").addEventListener("click", function () {
@@ -243,7 +394,6 @@
 
   async function submitAccessRequest(user) {
     try {
-      setStatus("loading", "送出申請中…");
       forbiddenPanel.hidden = true;
 
       var result = await window.gosuApi.requestTeacherAccess(
@@ -251,10 +401,8 @@
         user.displayName
       );
 
-      hideStatus();
-
       if (result.status === "approved") {
-        loadSchedule();
+        boot();
         return;
       }
 
@@ -262,20 +410,45 @@
       showCopyToast(result.message || "已送出申請");
     } catch (error) {
       console.error("[teacher-request]", error);
-      hideStatus();
       showForbiddenPanel(user);
       showCopyToast(error.message || "申請失敗，請稍後再試");
     }
   }
 
-  async function loadSchedule() {
+  async function loadMonthOverview(userId) {
+    var year = visibleMonth.getFullYear();
+    var month = visibleMonth.getMonth() + 1;
+    var data = await window.gosuApi.getTeacherMonthOverview(userId, year, month);
+
+    latestMonthOverview = data;
+    updateMonthLabel();
+    renderMonthSummary(data.summary);
+    renderCalendar(data.days || []);
+  }
+
+  async function loadDayDetail(userId, dateIso) {
+    selectedDate = dateIso;
+    setStatus("loading", "讀取中，請稍候…");
+    courseListEl.hidden = true;
+    courseListEl.innerHTML = "";
+
+    if (latestMonthOverview) {
+      renderCalendar(latestMonthOverview.days || []);
+    }
+
+    var data = await window.gosuApi.getTeacherSchedule(userId, { date: dateIso });
+
+    latestSchedule = data;
+    renderDateBanner(data);
+    renderCourses(data.courses || [], data.dateLabel);
+  }
+
+  async function boot() {
     try {
-      setStatus("loading", "讀取中，請稍候…");
       hideForbiddenPanel();
-      courseListEl.hidden = true;
-      courseListEl.innerHTML = "";
-      document.querySelector(".toolbar").hidden = false;
-      document.querySelector(".date-banner").hidden = false;
+      monthSummaryEl.hidden = true;
+      calendarSectionEl.hidden = true;
+      dayDetailEl.hidden = true;
 
       if (!window.gosuApi || !window.gosuApi.isConfigured()) {
         throw new Error("API 尚未設定，請聯絡技術人員");
@@ -287,17 +460,21 @@
         throw new Error("無法取得 LINE 登入資訊，請從 LINE 重新開啟");
       }
 
-      var data = await window.gosuApi.getTeacherSchedule(
-        window.gosuUser.userId,
-        getScheduleQuery()
-      );
+      if (!selectedDate) {
+        selectedDate = getTodayKey();
+      }
 
-      latestSchedule = data;
-      renderDateBanner(data);
-      renderCourses(data.courses || []);
+      await loadMonthOverview(window.gosuUser.userId);
+
+      monthSummaryEl.hidden = false;
+      calendarSectionEl.hidden = false;
+      dayDetailEl.hidden = false;
+
+      await loadDayDetail(window.gosuUser.userId, selectedDate);
     } catch (error) {
       console.error("[teacher]", error);
       latestSchedule = null;
+      latestMonthOverview = null;
       courseListEl.hidden = true;
       courseListEl.innerHTML = "";
 
@@ -307,32 +484,92 @@
       }
 
       hideForbiddenPanel();
-      document.querySelector(".toolbar").hidden = false;
-      document.querySelector(".date-banner").hidden = false;
+      monthSummaryEl.hidden = true;
+      calendarSectionEl.hidden = true;
+      dayDetailEl.hidden = false;
       setStatus("error", error.message || "讀取失敗，請稍後再試");
     }
   }
 
   function bindEvents() {
     btnRefresh.addEventListener("click", function () {
-      loadSchedule();
+      if (!window.gosuUser || !window.gosuUser.userId) {
+        return;
+      }
+
+      Promise.all([
+        loadMonthOverview(window.gosuUser.userId),
+        loadDayDetail(window.gosuUser.userId, selectedDate)
+      ]).catch(function (error) {
+        console.error("[teacher-refresh]", error);
+        setStatus("error", error.message || "讀取失敗，請稍後再試");
+      });
     });
 
-    btnToggleDay.addEventListener("click", function () {
-      viewingTomorrow = !viewingTomorrow;
-      updateToggleButtonLabel();
-      loadSchedule();
+    btnToday.addEventListener("click", function () {
+      if (!window.gosuUser || !window.gosuUser.userId) {
+        return;
+      }
+
+      visibleMonth = new Date();
+      visibleMonth.setDate(1);
+      visibleMonth.setHours(0, 0, 0, 0);
+      selectedDate = getTodayKey();
+
+      Promise.all([
+        loadMonthOverview(window.gosuUser.userId),
+        loadDayDetail(window.gosuUser.userId, selectedDate)
+      ]).catch(function (error) {
+        console.error("[teacher-today]", error);
+        setStatus("error", error.message || "讀取失敗，請稍後再試");
+      });
     });
 
     btnCopy.addEventListener("click", function () {
       copyScheduleText();
     });
+
+    btnPrevMonth.addEventListener("click", function () {
+      if (!window.gosuUser || !window.gosuUser.userId) {
+        return;
+      }
+
+      visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+      loadMonthOverview(window.gosuUser.userId).catch(function (error) {
+        console.error("[teacher-prev-month]", error);
+        setStatus("error", error.message || "讀取失敗，請稍後再試");
+      });
+    });
+
+    btnNextMonth.addEventListener("click", function () {
+      if (!window.gosuUser || !window.gosuUser.userId) {
+        return;
+      }
+
+      visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1);
+      loadMonthOverview(window.gosuUser.userId).catch(function (error) {
+        console.error("[teacher-next-month]", error);
+        setStatus("error", error.message || "讀取失敗，請稍後再試");
+      });
+    });
+
+    calendarGridEl.addEventListener("click", function (event) {
+      var button = event.target.closest("button[data-date]");
+      if (!button || !window.gosuUser || !window.gosuUser.userId) {
+        return;
+      }
+
+      var dateIso = button.getAttribute("data-date");
+      loadDayDetail(window.gosuUser.userId, dateIso).catch(function (error) {
+        console.error("[teacher-day]", error);
+        setStatus("error", error.message || "讀取失敗，請稍後再試");
+      });
+    });
   }
 
   try {
-    updateToggleButtonLabel();
     bindEvents();
-    loadSchedule();
+    boot();
   } catch (error) {
     console.error("[teacher-init]", error);
     setStatus("error", error.message || "頁面初始化失敗");

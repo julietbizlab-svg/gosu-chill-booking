@@ -94,6 +94,13 @@
       return apiFetch(query);
     },
 
+    getTeacherMonthOverview: function (userId, year, month) {
+      var query = "/api/teacher/month?userId=" + encodeURIComponent(userId) +
+        "&year=" + encodeURIComponent(year) +
+        "&month=" + encodeURIComponent(month);
+      return apiFetch(query);
+    },
+
     getTeacherStatus: function (userId) {
       return apiFetch("/api/teacher/status?userId=" + encodeURIComponent(userId));
     },

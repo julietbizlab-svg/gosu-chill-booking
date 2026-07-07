@@ -9,6 +9,7 @@ import {
   bookCourse,
   cancelBooking,
   getTeacherScheduleForDate,
+  getTeacherMonthOverview,
   getTeacherAccessStatus,
   requestTeacherAccess,
   getPendingTeacherRequests,
@@ -20,7 +21,8 @@ import {
   isAdminUser,
   resolveTeacherDateParam,
   getTaipeiWeekdayChar,
-  formatDateZhFromIso
+  formatDateZhFromIso,
+  getTaipeiDateString
 } from "./teacher-auth.js";
 import {
   notifyAdminsTeacherRequest,
@@ -164,6 +166,31 @@ export default {
           weekday: getTaipeiWeekdayChar(scheduleDate),
           courses: teacherCourses
         }, corsHeaders);
+      }
+
+      if (url.pathname === "/api/teacher/month" && request.method === "GET") {
+        ensureNotionEnv(env);
+        var monthTeacherUserId = url.searchParams.get("userId");
+        var yearParam = Number(url.searchParams.get("year"));
+        var monthParam = Number(url.searchParams.get("month"));
+
+        if (!monthTeacherUserId) {
+          return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
+        }
+
+        if (!(await isTeacherUser(env, monthTeacherUserId))) {
+          return jsonResponse({ ok: false, message: "無權限查看" }, corsHeaders, 403);
+        }
+
+        if (!yearParam || !monthParam || monthParam < 1 || monthParam > 12) {
+          var todayParts = getTaipeiDateString(0).split("-");
+          yearParam = Number(todayParts[0]);
+          monthParam = Number(todayParts[1]);
+        }
+
+        var monthOverview = await getTeacherMonthOverview(env, yearParam, monthParam);
+
+        return jsonResponse(Object.assign({ ok: true }, monthOverview), corsHeaders);
       }
 
       if (url.pathname === "/api/teacher/status" && request.method === "GET") {
