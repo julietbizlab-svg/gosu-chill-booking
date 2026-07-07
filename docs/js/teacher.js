@@ -6,6 +6,7 @@
 
   var viewDateEl = document.getElementById("view-date");
   var statusPanel = document.getElementById("status-panel");
+  var forbiddenPanel = document.getElementById("forbidden-panel");
   var courseListEl = document.getElementById("course-list");
   var btnRefresh = document.getElementById("btn-refresh");
   var btnToggleDay = document.getElementById("btn-toggle-day");
@@ -183,11 +184,43 @@
     }
   }
 
+  function hideForbiddenPanel() {
+    forbiddenPanel.hidden = true;
+    forbiddenPanel.innerHTML = "";
+  }
+
+  function showForbiddenPanel(user) {
+    hideStatus();
+    courseListEl.hidden = true;
+    courseListEl.innerHTML = "";
+    document.querySelector(".toolbar").hidden = true;
+    document.querySelector(".date-banner").hidden = true;
+
+    if (!window.gosuLineId) {
+      setStatus("forbidden", "無權限查看");
+      return;
+    }
+
+    window.gosuLineId.bindIdCard(forbiddenPanel, user, copyToast, {
+      forbiddenTitle: "尚未開通老師查看權限",
+      forbiddenText: "請複製下方 LINE 編號傳給工作室，開通後關閉此頁再重新開啟。",
+      title: "您的 LINE 編號",
+      hint: "",
+      secondaryLabel: "查看開通步驟說明",
+      onSecondary: function () {
+        window.location.href = "my-line-id.html";
+      }
+    });
+  }
+
   async function loadSchedule() {
     try {
       setStatus("loading", "讀取中，請稍候…");
+      hideForbiddenPanel();
       courseListEl.hidden = true;
       courseListEl.innerHTML = "";
+      document.querySelector(".toolbar").hidden = false;
+      document.querySelector(".date-banner").hidden = false;
 
       if (!window.gosuApi || !window.gosuApi.isConfigured()) {
         throw new Error("API 尚未設定，請聯絡技術人員");
@@ -213,11 +246,14 @@
       courseListEl.hidden = true;
       courseListEl.innerHTML = "";
 
-      if (error && error.status === 403) {
-        setStatus("forbidden", "無權限查看");
+      if (error && error.status === 403 && window.gosuUser) {
+        showForbiddenPanel(window.gosuUser);
         return;
       }
 
+      hideForbiddenPanel();
+      document.querySelector(".toolbar").hidden = false;
+      document.querySelector(".date-banner").hidden = false;
       setStatus("error", error.message || "讀取失敗，請稍後再試");
     }
   }

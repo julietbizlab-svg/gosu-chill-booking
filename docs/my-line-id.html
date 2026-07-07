@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1F6B5F">
+  <title>我的 LINE 編號｜高手揪派</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/line-id.css?v=20260709">
+</head>
+<body>
+  <div class="line-id-page">
+    <header class="line-id-header">
+      <h1 class="line-id-title">我的 LINE 編號</h1>
+      <p class="line-id-subtitle">開通學員帳號或老師權限時，請將編號傳給工作室</p>
+    </header>
+
+    <div id="status-panel" class="line-id-status is-loading">讀取中…</div>
+    <div id="id-card-panel" hidden></div>
+
+    <ol class="line-id-steps">
+      <li>點 <strong>複製我的 LINE 編號</strong></li>
+      <li>在 LINE 傳給工作室（或貼給負責人）</li>
+      <li>工作室開通後，重新開啟預約頁即可使用</li>
+    </ol>
+  </div>
+
+  <div id="copy-toast" class="line-id-toast" aria-live="polite">已複製</div>
+
+  <script src="js/config.js?v=20260709"></script>
+  <script src="js/liff-init.js?v=20260709"></script>
+  <script src="js/line-id-helper.js?v=20260709"></script>
+  <script src="js/my-line-id.js?v=20260709"></script>
+</body>
+</html>
