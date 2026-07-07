@@ -1,0 +1,274 @@
+/* 高手揪派 — 老師今日預約（手機友善） */
+
+:root {
+  color-scheme: light;
+  --bg: #f7fbf8;
+  --card: #ffffff;
+  --mint: #dcefe7;
+  --sage: #8FBFAE;
+  --deep-green: #1f6b5f;
+  --line: #e7e2dc;
+  --text: #2f3a3a;
+  --muted: #8a9a96;
+  --danger: #d65a5a;
+  --warn: #c9a04a;
+  --shadow: 0 12px 32px rgba(80, 120, 105, 0.12);
+  --font-base: 22px;
+  --font-small: 18px;
+  --font-title: clamp(30px, 7vw, 40px);
+  --btn-height: 64px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--font-base);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px 16px 40px;
+  background: linear-gradient(180deg, #f7fbf8, #fdf8f3);
+  color: var(--text);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  line-height: 1.6;
+}
+
+.page {
+  width: min(100%, 720px);
+  margin: 0 auto;
+}
+
+.teacher-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.teacher-title {
+  margin: 0;
+  font-size: var(--font-title);
+  font-weight: 800;
+  color: var(--deep-green);
+}
+
+.teacher-subtitle {
+  margin: 8px 0 0;
+  font-size: var(--font-small);
+  color: var(--muted);
+}
+
+.date-banner {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.date-banner-label {
+  margin: 0;
+  font-size: var(--font-small);
+  color: var(--muted);
+}
+
+.date-banner-value {
+  margin: 6px 0 0;
+  font-size: clamp(28px, 6vw, 34px);
+  font-weight: 800;
+  color: var(--deep-green);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tool-btn {
+  min-height: var(--btn-height);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  color: var(--deep-green);
+  font-size: var(--font-base);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tool-btn-primary {
+  background: var(--deep-green);
+  border-color: var(--deep-green);
+  color: #fff;
+}
+
+.tool-btn:active {
+  transform: scale(0.98);
+}
+
+.status-panel {
+  border-radius: 20px;
+  padding: 18px 20px;
+  text-align: center;
+  font-size: var(--font-base);
+  margin-bottom: 20px;
+}
+
+.status-panel.is-loading {
+  background: #eef7f2;
+  color: var(--deep-green);
+}
+
+.status-panel.is-error {
+  background: #fdeeee;
+  color: var(--danger);
+}
+
+.status-panel.is-forbidden {
+  background: #fff4df;
+  color: #9a6b00;
+}
+
+.status-panel.is-empty {
+  background: #f3f3f3;
+  color: var(--muted);
+}
+
+.course-list {
+  display: grid;
+  gap: 16px;
+}
+
+.course-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  padding: 18px 18px 16px;
+}
+
+.course-card.is-closure {
+  border-color: #f0c7c7;
+  background: #fff8f8;
+}
+
+.course-time {
+  margin: 0;
+  font-size: clamp(28px, 6vw, 34px);
+  font-weight: 800;
+  color: var(--deep-green);
+  line-height: 1.2;
+}
+
+.course-title {
+  margin: 6px 0 0;
+  font-size: var(--font-base);
+  font-weight: 700;
+}
+
+.course-meta {
+  margin: 10px 0 0;
+  font-size: var(--font-small);
+  color: var(--muted);
+}
+
+.course-meta strong {
+  color: var(--deep-green);
+  font-size: 1.1em;
+}
+
+.course-note {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff4df;
+  color: #9a6b00;
+  font-size: var(--font-small);
+}
+
+.student-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.student-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #f7fbf8;
+  border: 1px solid var(--line);
+}
+
+.student-name {
+  font-size: var(--font-base);
+  font-weight: 700;
+}
+
+.student-type {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--mint);
+  color: var(--deep-green);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.student-type.is-trial {
+  background: #fff0d8;
+  color: #9a6b00;
+}
+
+.student-type.is-unknown {
+  background: #ececec;
+  color: #666;
+}
+
+.student-empty {
+  margin: 14px 0 0;
+  padding: 14px;
+  border-radius: 16px;
+  background: #f7f7f7;
+  color: var(--muted);
+  text-align: center;
+  font-size: var(--font-small);
+}
+
+.copy-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: rgba(31, 107, 95, 0.95);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-size: var(--font-small);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 20;
+}
+
+.copy-toast.is-visible {
+  opacity: 1;
+}
+
+@media (min-width: 640px) {
+  .toolbar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

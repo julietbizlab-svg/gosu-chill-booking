@@ -14,18 +14,21 @@ read -r -p "NOTION_TOKEN: " NOTION_TOKEN
 read -r -p "學員表 Database ID（學員資料）: " MEMBERS_ID
 read -r -p "課程表 Database ID（2026年7月課表）: " COURSES_ID
 read -r -p "預約紀錄表 Database ID: " BOOKINGS_ID
+read -r -p "老師 LINE userId 白名單（可留空，逗號分隔）: " TEACHER_IDS
 
 # 去除前後空白
 NOTION_TOKEN=$(echo "$NOTION_TOKEN" | tr -d '[:space:]')
 MEMBERS_ID=$(echo "$MEMBERS_ID" | tr -d '[:space:]')
 COURSES_ID=$(echo "$COURSES_ID" | tr -d '[:space:]')
 BOOKINGS_ID=$(echo "$BOOKINGS_ID" | tr -d '[:space:]')
+TEACHER_IDS=$(echo "$TEACHER_IDS" | tr -d '[:space:]')
 
 cat > .dev.vars <<EOF
 NOTION_TOKEN=${NOTION_TOKEN}
 NOTION_DATABASE_MEMBERS=${MEMBERS_ID}
 NOTION_DATABASE_COURSES=${COURSES_ID}
 NOTION_DATABASE_BOOKINGS=${BOOKINGS_ID}
+TEACHER_LINE_USER_IDS=${TEACHER_IDS}
 EOF
 
 echo ""

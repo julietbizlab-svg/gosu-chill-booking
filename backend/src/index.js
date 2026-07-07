@@ -7,9 +7,16 @@ import {
   getCoursesByMonth,
   getActiveBookingsByUser,
   bookCourse,
-  cancelBooking
+  cancelBooking,
+  getTeacherScheduleForDate
 } from "./notion.js";
 import { isTrialMember } from "./member-rules.js";
+import {
+  isTeacherUser,
+  resolveTeacherDateParam,
+  getTaipeiWeekdayChar,
+  formatDateZhFromIso
+} from "./teacher-auth.js";
 
 export default {
   async fetch(request, env) {
@@ -124,6 +131,30 @@ export default {
         var cancelBody = await readJson(request);
         var cancelResult = await cancelBooking(env, cancelBody.userId, cancelBody.courseId);
         return jsonResponse(cancelResult, corsHeaders);
+      }
+
+      if (url.pathname === "/api/teacher/today" && request.method === "GET") {
+        ensureNotionEnv(env);
+        var teacherUserId = url.searchParams.get("userId");
+
+        if (!teacherUserId) {
+          return jsonResponse({ ok: false, message: "缺少 userId" }, corsHeaders, 400);
+        }
+
+        if (!isTeacherUser(env, teacherUserId)) {
+          return jsonResponse({ ok: false, message: "無權限查看" }, corsHeaders, 403);
+        }
+
+        var scheduleDate = resolveTeacherDateParam(url.searchParams);
+        var teacherCourses = await getTeacherScheduleForDate(env, scheduleDate);
+
+        return jsonResponse({
+          ok: true,
+          date: scheduleDate,
+          dateLabel: formatDateZhFromIso(scheduleDate),
+          weekday: getTaipeiWeekdayChar(scheduleDate),
+          courses: teacherCourses
+        }, corsHeaders);
       }
 
       return jsonResponse({ ok: false, message: "找不到此 API" }, corsHeaders, 404);

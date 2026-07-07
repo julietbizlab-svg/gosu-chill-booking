@@ -355,6 +355,8 @@ function parseCoursePage(page) {
     capacity: hasCapacity ? getNumber(props, "名額") : 12,
     enrolled: hasEnrolled ? getNumber(props, "已報名") : 0,
     status: isClosed ? "closed" : "open",
+    notionStatus: statusValue || (isClosed ? "停課" : "開放"),
+    remark: remark,
     hasEnrolled: hasEnrolled,
     isClosure: isClosure,
     closureLabel: isClosure ? buildClosureLabel(remark) : ""
@@ -685,6 +687,183 @@ export async function cancelBooking(env, userId, courseId) {
     message: "已取消預約，堂數已退還",
     creditsLeft: member.credits + 1
   };
+}
+
+async function getConfirmedBookingsByCourseIds(env, courseIds) {
+  if (!courseIds.length) {
+    return [];
+  }
+
+  var courseFilters = courseIds.map(function (courseId) {
+    return { property: "課程ID", rich_text: { equals: courseId } };
+  });
+
+  var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_BOOKINGS, {
+    filter: {
+      and: [
+        buildStatusFilter("狀態", "已確認"),
+        { or: courseFilters }
+      ]
+    }
+  });
+
+  return pages.map(function (page) {
+    var props = page.properties || {};
+    return {
+      id: page.id,
+      userId: getTextOrTitle(props, "LINE userId"),
+      courseId: getRichText(props, "課程ID")
+    };
+  });
+}
+
+async function getMembersMapByUserIds(env, userIds) {
+  var unique = [];
+  var seen = {};
+
+  userIds.forEach(function (id) {
+    if (id && !seen[id]) {
+      seen[id] = true;
+      unique.push(id);
+    }
+  });
+
+  if (!unique.length) {
+    return new Map();
+  }
+
+  var memberFilters = unique.map(function (userId) {
+    return buildMemberUserIdFilter(userId);
+  });
+
+  var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_MEMBERS, {
+    filter: { or: memberFilters }
+  });
+
+  var map = new Map();
+
+  pages.forEach(function (page) {
+    var member = parseMemberPage(page);
+    if (member.userId) {
+      map.set(member.userId, member);
+    }
+  });
+
+  return map;
+}
+
+function getCourseApiStatus(course) {
+  if (course.isClosure) {
+    return "停課";
+  }
+
+  if (course.notionStatus) {
+    return course.notionStatus;
+  }
+
+  return course.status === "open" ? "開放" : "關閉";
+}
+
+function getCourseApiNote(course) {
+  if (course.isClosure && course.closureLabel) {
+    return course.closureLabel;
+  }
+
+  return (course.remark || "").trim();
+}
+
+function sortCoursesByTime(courses) {
+  return courses.slice().sort(function (a, b) {
+    var hourA = parseStartHour(a.time);
+    var hourB = parseStartHour(b.time);
+
+    if (hourA === null && hourB === null) {
+      return 0;
+    }
+    if (hourA === null) {
+      return 1;
+    }
+    if (hourB === null) {
+      return -1;
+    }
+
+    if (hourA !== hourB) {
+      return hourA - hourB;
+    }
+
+    return String(a.time || "").localeCompare(String(b.time || ""));
+  });
+}
+
+export async function getCoursesByDate(env, dateIso) {
+  var pages = await queryDatabase(env.NOTION_TOKEN, env.NOTION_DATABASE_COURSES, {
+    filter: {
+      or: [
+        { property: "日期", date: { equals: dateIso } },
+        { property: "上課日期", date: { equals: dateIso } }
+      ]
+    },
+    sorts: [
+      { property: "日期", direction: "ascending" }
+    ]
+  });
+
+  return sortCoursesByTime(
+    pages
+      .map(parseCoursePage)
+      .filter(function (course) {
+        return course.date === dateIso;
+      })
+  );
+}
+
+export async function getTeacherScheduleForDate(env, dateIso) {
+  var courses = await getCoursesByDate(env, dateIso);
+  var courseIds = courses.map(function (course) { return course.id; });
+  var bookings = await getConfirmedBookingsByCourseIds(env, courseIds);
+  var userIds = bookings.map(function (booking) { return booking.userId; });
+  var membersMap = await getMembersMapByUserIds(env, userIds);
+  var bookingsByCourse = new Map();
+
+  bookings.forEach(function (booking) {
+    if (!bookingsByCourse.has(booking.courseId)) {
+      bookingsByCourse.set(booking.courseId, []);
+    }
+    bookingsByCourse.get(booking.courseId).push(booking);
+  });
+
+  return courses.map(function (course) {
+    var courseBookings = bookingsByCourse.get(course.id) || [];
+    var students = courseBookings.map(function (booking) {
+      var member = membersMap.get(booking.userId);
+      var name = member
+        ? member.displayName
+        : (booking.userId || "未知學員");
+      var type = "正式";
+
+      if (!member) {
+        type = "未知";
+      } else if (isTrialMember(member)) {
+        type = "體驗";
+      }
+
+      return {
+        name: name,
+        type: type
+      };
+    });
+
+    return {
+      courseId: course.id,
+      time: course.time || "—",
+      title: course.title || "未命名課程",
+      capacity: course.capacity,
+      enrolled: course.enrolled,
+      status: getCourseApiStatus(course),
+      students: students,
+      note: getCourseApiNote(course)
+    };
+  });
 }
 
 export function ensureNotionEnv(env) {

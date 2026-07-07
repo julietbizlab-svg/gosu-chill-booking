@@ -30,15 +30,18 @@
 
     if (!response.ok) {
       var message = "伺服器回應錯誤（" + response.status + "）";
+      var body = null;
 
       try {
-        var body = await response.json();
+        body = await response.json();
         if (body && body.message) {
           message = body.message;
         }
       } catch (ignore) {}
 
-      throw new Error(message);
+      var error = new Error(message);
+      error.status = response.status;
+      throw error;
     }
 
     return response.json();
@@ -76,6 +79,19 @@
         method: "POST",
         body: JSON.stringify({ userId: userId, courseId: courseId })
       });
+    },
+
+    getTeacherSchedule: function (userId, options) {
+      var query = "/api/teacher/today?userId=" + encodeURIComponent(userId);
+      var opts = options || {};
+
+      if (opts.date) {
+        query += "&date=" + encodeURIComponent(opts.date);
+      } else if (opts.day === "tomorrow") {
+        query += "&day=tomorrow";
+      }
+
+      return apiFetch(query);
     },
 
     isConfigured: function () {

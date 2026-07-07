@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1F6B5F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="老師今日預約">
+  <title>高手揪派｜今日預約</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/teacher.css?v=20260708">
+</head>
+<body>
+  <div class="page">
+    <header class="teacher-header">
+      <h1 class="teacher-title">高手揪派｜今日預約</h1>
+      <p class="teacher-subtitle">老師專用查看頁（僅供查閱）</p>
+    </header>
+
+    <section class="date-banner" aria-label="查看日期">
+      <p class="date-banner-label">查看日期</p>
+      <p id="view-date" class="date-banner-value">讀取中…</p>
+    </section>
+
+    <div class="toolbar">
+      <button id="btn-refresh" class="tool-btn tool-btn-primary" type="button">重新整理</button>
+      <button id="btn-toggle-day" class="tool-btn" type="button">看明天</button>
+      <button id="btn-copy" class="tool-btn" type="button">複製今日名單</button>
+    </div>
+
+    <div id="status-panel" class="status-panel is-loading" role="status" aria-live="polite">
+      讀取中，請稍候…
+    </div>
+
+    <div id="course-list" class="course-list" hidden></div>
+  </div>
+
+  <div id="copy-toast" class="copy-toast" aria-live="polite">已複製到剪貼簿</div>
+
+  <script src="js/config.js?v=20260708"></script>
+  <script src="js/liff-init.js?v=20260708"></script>
+  <script src="js/api.js?v=20260708"></script>
+  <script src="js/teacher.js?v=20260708"></script>
+</body>
+</html>
